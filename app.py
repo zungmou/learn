@@ -22,6 +22,7 @@ class ContentBase(BaseModel):
 
 class PostCreate(ContentBase):
     title: str
+    source_url: Optional[str] = None
 
 class ThoughtCreate(ContentBase):
     pass
@@ -59,16 +60,17 @@ def create_post(post: PostCreate):
     date_str = get_current_jekyll_date()
     file_date = date_str.split(' ')[0]
     
-    # 简单的标题转文件名处理
-    safe_title = post.title.replace(" ", "-").lower()
-    filename = f"{file_date}-{safe_title}.md"
+    # 使用时间戳确保文件名唯一且不包含中文
+    timestamp = datetime.datetime.now().strftime("%H%M%S")
+    filename = f"{file_date}-post-{timestamp}.md"
     file_path = POSTS_DIR / filename
     
     post_data = frontmatter.Post(
         post.content,
         layout="post",
         title=post.title,
-        date=date_str
+        date=date_str,
+        source_url=post.source_url
     )
     
     with open(file_path, "wb") as f:
@@ -177,6 +179,7 @@ def list_all_content():
 
 class PostUpdate(BaseModel):
     title: Optional[str] = None
+    source_url: Optional[str] = None
     content: str
 
 class ThoughtUpdate(BaseModel):
@@ -208,6 +211,9 @@ def update_post(filename: str, data: PostUpdate):
     post.content = data.content
     if data.title:
         post["title"] = data.title
+    
+    # Always update source_url (can be None/empty to remove)
+    post["source_url"] = data.source_url
         
     with open(file_path, "wb") as f:
         frontmatter.dump(post, f)

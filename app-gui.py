@@ -177,18 +177,21 @@ class JekyllCMSGui:
         
         current_content = details.get("content", "")
         current_title = details.get("metadata", {}).get("title", "")
+        current_source_url = details.get("metadata", {}).get("source_url", "")
         
         result = self.content_dialog(
             f"编辑{ '文章' if item_type == 'post' else '想法' }", 
             is_post=(item_type == "post"),
             initial_title=current_title,
-            initial_content=current_content
+            initial_content=current_content,
+            initial_url=current_source_url
         )
         
         if result:
             data = {"content": result["content"]}
             if item_type == "post":
                 data["title"] = result["title"]
+                data["source_url"] = result["url"]
                 
             res = self.api_call(endpoint, method="PUT", data=data)
             if res:
@@ -214,12 +217,12 @@ class JekyllCMSGui:
                 messagebox.showinfo("成功", f"已删除 {filename}")
                 self.refresh_list()
 
-    def content_dialog(self, window_title, is_post=True, initial_title="", initial_content=""):
+    def content_dialog(self, window_title, is_post=True, initial_title="", initial_content="", initial_url=""):
         dialog = tk.Toplevel(self.root)
         dialog.title(window_title)
         
         # Center relative to root
-        width, height = 700, 500
+        width, height = 700, 550
         root_x = self.root.winfo_x()
         root_y = self.root.winfo_y()
         root_width = self.root.winfo_width()
@@ -238,8 +241,16 @@ class JekyllCMSGui:
             title_entry.config(state="disabled")
             title_var.set("(想法无标题)")
 
+        # URL field
+        tk.Label(dialog, text="来源 URL (可选):").pack(anchor=tk.W, padx=10, pady=(5, 0))
+        url_var = tk.StringVar(value=initial_url or "")
+        url_entry = tk.Entry(dialog, textvariable=url_var)
+        url_entry.pack(fill=tk.X, padx=10, pady=5)
+        if not is_post:
+            url_entry.config(state="disabled")
+
         # Content field
-        tk.Label(dialog, text="内容:").pack(anchor=tk.W, padx=10, pady=(10, 0))
+        tk.Label(dialog, text="内容:").pack(anchor=tk.W, padx=10, pady=(5, 0))
         text_area = tk.Text(dialog, undo=True)
         text_area.insert("1.0", initial_content)
         text_area.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
@@ -257,6 +268,7 @@ class JekyllCMSGui:
                 
             result["title"] = title_var.get()
             result["content"] = content
+            result["url"] = url_var.get().strip()
             dialog.destroy()
             
         def on_cancel():

@@ -13,6 +13,9 @@ title: 我的动态
     {% for item in all_items %}
       <li style="margin-bottom: 50px; list-style: none; border-bottom: 1px solid #eee; padding-bottom: 20px;">
         <span class="post-meta">{{ item.date | date: "%b %d, %y" }}</span>
+        {% if item.source_url %}
+          <span class="post-meta"> • <a href="{{ item.source_url }}" target="_blank">来源</a></span>
+        {% endif %}
         
         {% if item.collection == "thoughts" %}
           <!-- 想法：直接显示内容 -->
