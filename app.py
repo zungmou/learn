@@ -22,7 +22,6 @@ class ContentBase(BaseModel):
 
 class PostCreate(ContentBase):
     title: str
-    categories: Optional[str] = "blog"
 
 class ThoughtCreate(ContentBase):
     pass
@@ -69,8 +68,7 @@ def create_post(post: PostCreate):
         post.content,
         layout="post",
         title=post.title,
-        date=date_str,
-        categories=post.categories
+        date=date_str
     )
     
     with open(file_path, "wb") as f:
@@ -180,7 +178,6 @@ def list_all_content():
 class PostUpdate(BaseModel):
     title: Optional[str] = None
     content: str
-    categories: Optional[str] = None
 
 class ThoughtUpdate(BaseModel):
     content: str
@@ -211,8 +208,6 @@ def update_post(filename: str, data: PostUpdate):
     post.content = data.content
     if data.title:
         post["title"] = data.title
-    if data.categories:
-        post["categories"] = data.categories
         
     with open(file_path, "wb") as f:
         frontmatter.dump(post, f)

@@ -1,8 +1,7 @@
 ---
-layout: post
-title: "汉明距离"
 date: 2026-05-11 23:30:00 +0800
-categories: announcement
+layout: post
+title: 汉明距离
 ---
 
 ### 什么是汉明距离？
