@@ -80,20 +80,6 @@ def get_filename_date():
 
 import subprocess
 
-def git_sync(message: str):
-    try:
-        # 添加所有更改
-        subprocess.run(["git", "add", "."], check=True)
-        # 提交更改
-        subprocess.run(["git", "commit", "-m", message], check=True)
-        # 推送到远程仓库
-        subprocess.run(["git", "push"], check=True)
-        print(f"Git sync successful: {message}")
-    except subprocess.CalledProcessError as e:
-        print(f"Git sync failed: {e}")
-    except Exception as e:
-        print(f"Unexpected error during git sync: {e}")
-
 @app.post("/posts", response_model=ContentResponse)
 def create_post(post: PostCreate):
     date_str = get_current_jekyll_date()
@@ -114,8 +100,6 @@ def create_post(post: PostCreate):
     
     with open(file_path, "wb") as f:
         frontmatter.dump(post_data, f)
-    
-    git_sync(f"Post: {post.title}")
         
     return {
         "filename": filename,
@@ -141,9 +125,6 @@ def create_thought(thought: ThoughtCreate):
     
     with open(file_path, "wb") as f:
         frontmatter.dump(thought_data, f)
-    
-    snippet = thought.content[:30] + "..." if len(thought.content) > 30 else thought.content
-    git_sync(f"Thought: {snippet}")
         
     return {
         "filename": filename,
@@ -257,7 +238,6 @@ def update_post(filename: str, data: PostUpdate):
     with open(file_path, "wb") as f:
         frontmatter.dump(post, f)
     
-    git_sync(f"Update Post: {post.get('title')}")
     return {"status": "success", "filename": filename}
 
 @app.put("/thoughts/{filename}")
@@ -272,8 +252,6 @@ def update_thought(filename: str, data: ThoughtUpdate):
     with open(file_path, "wb") as f:
         frontmatter.dump(thought, f)
     
-    snippet = data.content[:30] + "..." if len(data.content) > 30 else data.content
-    git_sync(f"Update Thought: {snippet}")
     return {"status": "success", "filename": filename}
 
 @app.delete("/posts/{filename}")
@@ -282,11 +260,8 @@ def delete_post(filename: str):
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="Post not found")
     
-    post = frontmatter.load(file_path)
-    title = post.get("title", filename)
     os.remove(file_path)
     
-    git_sync(f"Delete Post: {title}")
     return {"status": "success", "message": f"Deleted {filename}"}
 
 @app.delete("/thoughts/{filename}")
@@ -295,11 +270,8 @@ def delete_thought(filename: str):
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="Thought not found")
     
-    thought = frontmatter.load(file_path)
-    snippet = thought.content[:30] + "..." if len(thought.content) > 30 else thought.content
     os.remove(file_path)
     
-    git_sync(f"Delete Thought: {snippet}")
     return {"status": "success", "message": f"Deleted {filename}"}
 
 if __name__ == "__main__":
