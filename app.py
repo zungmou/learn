@@ -6,7 +6,46 @@ from pydantic import BaseModel
 import frontmatter
 from pathlib import Path
 
-app = FastAPI(title="Jekyll CMS API")
+import asyncio
+from contextlib import asynccontextmanager
+
+def git_sync_periodic():
+    try:
+        # 1. 检查指定目录是否有改动
+        status = subprocess.run(
+            ["git", "status", "--porcelain", str(POSTS_DIR), str(THOUGHTS_DIR)],
+            capture_output=True, text=True
+        ).stdout.strip()
+        
+        if not status:
+            return # 没有改动，跳过
+            
+        # 2. 仅添加指定目录的更改
+        subprocess.run(["git", "add", str(POSTS_DIR), str(THOUGHTS_DIR)], check=True)
+        
+        # 3. 提交并推送
+        subprocess.run(["git", "commit", "-m", "Auto-sync content updates"], check=True)
+        subprocess.run(["git", "push"], check=True)
+        print("Periodic Git sync successful.")
+    except subprocess.CalledProcessError as e:
+        print(f"Periodic Git sync failed: {e}")
+    except Exception as e:
+        print(f"Unexpected error during periodic sync: {e}")
+
+async def sync_loop():
+    while True:
+        git_sync_periodic()
+        await asyncio.sleep(60)  # 每 60 秒检查一次
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 启动后台同步任务
+    sync_task = asyncio.create_task(sync_loop())
+    yield
+    # 停止后台任务
+    sync_task.cancel()
+
+app = FastAPI(title="Jekyll CMS API", lifespan=lifespan)
 
 # 基础路径
 BASE_DIR = Path(".")
