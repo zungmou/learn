@@ -236,6 +236,32 @@ def update_thought(filename: str, data: ThoughtUpdate):
     git_sync(f"Update Thought: {snippet}")
     return {"status": "success", "filename": filename}
 
+@app.delete("/posts/{filename}")
+def delete_post(filename: str):
+    file_path = POSTS_DIR / filename
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    post = frontmatter.load(file_path)
+    title = post.get("title", filename)
+    os.remove(file_path)
+    
+    git_sync(f"Delete Post: {title}")
+    return {"status": "success", "message": f"Deleted {filename}"}
+
+@app.delete("/thoughts/{filename}")
+def delete_thought(filename: str):
+    file_path = THOUGHTS_DIR / filename
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Thought not found")
+    
+    thought = frontmatter.load(file_path)
+    snippet = thought.content[:30] + "..." if len(thought.content) > 30 else thought.content
+    os.remove(file_path)
+    
+    git_sync(f"Delete Thought: {snippet}")
+    return {"status": "success", "message": f"Deleted {filename}"}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=9001)

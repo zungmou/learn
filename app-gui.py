@@ -41,6 +41,7 @@ class JekyllCMSGui:
         action_menu.add_command(label="New Thought", command=self.new_thought)
         action_menu.add_separator()
         action_menu.add_command(label="Edit Selected", command=self.edit_selected)
+        action_menu.add_command(label="Delete Selected", command=self.delete_selected)
         action_menu.add_command(label="Refresh", command=self.refresh_list)
         action_menu.add_separator()
         action_menu.add_command(label="Exit", command=self.root.quit)
@@ -76,6 +77,21 @@ class JekyllCMSGui:
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
         self.tree.bind("<Double-1>", lambda e: self.edit_selected())
+        
+        # Context Menu
+        self.context_menu = tk.Menu(self.root, tearoff=0)
+        self.context_menu.add_command(label="编辑", command=self.edit_selected)
+        self.context_menu.add_command(label="删除", command=self.delete_selected)
+        
+        # Bind right click (Button-3 is right click on Windows/Linux)
+        self.tree.bind("<Button-3>", self.show_context_menu)
+
+    def show_context_menu(self, event):
+        # Select item on right click
+        item = self.tree.identify_row(event.y)
+        if item:
+            self.tree.selection_set(item)
+            self.context_menu.post(event.x_root, event.y_root)
 
     def api_call(self, path, method="GET", data=None):
         url = f"{API_BASE}{path}"
@@ -177,6 +193,25 @@ class JekyllCMSGui:
             res = self.api_call(endpoint, method="PUT", data=data)
             if res:
                 messagebox.showinfo("成功", f"已更新 {filename}")
+                self.refresh_list()
+
+    def delete_selected(self):
+        selected = self.tree.selection()
+        if not selected:
+            messagebox.showwarning("警告", "请选择要删除的项目")
+            return
+        
+        item_id = selected[0]
+        tags = self.tree.item(item_id, "tags")
+        filename = tags[0]
+        item_type = tags[1]
+        display_name = self.tree.item(item_id, "values")[1]
+        
+        if messagebox.askyesno("确认删除", f"确定要删除 {item_type} '{display_name}' 吗？\n此操作将触发 Git 同步且不可撤销。"):
+            endpoint = f"/{item_type}s/{filename}"
+            res = self.api_call(endpoint, method="DELETE")
+            if res:
+                messagebox.showinfo("成功", f"已删除 {filename}")
                 self.refresh_list()
 
     def content_dialog(self, window_title, is_post=True, initial_title="", initial_content=""):
