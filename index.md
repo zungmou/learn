@@ -1,8 +1,6 @@
 ---
-layout: default
-title: Home
+layout: home
+title: 欢迎来到我的博客
 ---
 
-# Welcome to My Jekyll Site
-
-This is the homepage of my Jekyll site hosted on GitHub Pages.
+这是我的 Jekyll 博客首页。下面是最近发布的文章：
