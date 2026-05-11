@@ -4,7 +4,6 @@ title: 我的动态
 ---
 
 <div class="home">
-  <h1 class="page-heading">时间线</h1>
 
   {% assign posts = site.posts %}
   {% assign thoughts = site.thoughts %}
