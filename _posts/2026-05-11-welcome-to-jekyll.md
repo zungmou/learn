@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Jekyll 初始化成功！"
-date: 2026-05-11 22:00:00 +0800
+date: 2026-05-10 12:00:00 +0800
 categories: announcement
 ---
 
