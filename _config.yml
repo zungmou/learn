@@ -11,7 +11,7 @@ giscus:
   category: Announcements
   category_id: DIC_kwDOSaWeS84C81Q1
   mapping: pathname
-  reactions_enabled: '1'
+  reactions_enabled: "1"
   theme: dark
   lang: zh-CN
 
