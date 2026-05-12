@@ -94,6 +94,14 @@ title: 我的动态
       display: none !important;
     }
 
+    .page-content {
+      padding: 0 !important; /* 移除 page-content 的默认间距 */
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
     /* 强行覆盖主题的限制 */
     .wrapper {
       max-width: 100% !important;
