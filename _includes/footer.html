@@ -5,11 +5,9 @@
 
     <div class="footer-col-wrapper">
       <div class="footer-col footer-col-1">
-        <h2 class="footer-heading">内容统计</h2>
+        <h2 class="footer-heading">站点概况</h2>
         <ul class="contact-list">
-          <li>共发布文章: {{ site.posts | size }} 篇</li>
-          <li>共记录想法: {{ site.thoughts | size }} 条</li>
-          <li>总动态数: {{ site.posts.size | plus: site.thoughts.size }}</li>
+          <li><a href="{{ '/stats.html' | relative_url }}">查看详细统计信息</a></li>
         </ul>
       </div>
 
