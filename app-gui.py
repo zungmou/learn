@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox, simpledialog
+from tkinter import ttk, messagebox, simpledialog, font as tkfont
 import json
 import urllib.request
 import urllib.parse
@@ -31,6 +31,14 @@ class JekyllCMSGui:
         window.geometry(f"{width}x{height}+{x}+{y}")
 
     def setup_ui(self):
+        style = ttk.Style()
+        # Fix for ttk.Treeview tags on some platforms (like Windows)
+        def fixed_map(option):
+            return [elm for elm in style.map('Treeview', query_opt=option) 
+                    if elm[:2] != ('!disabled', '!selected')]
+        style.map('Treeview', foreground=fixed_map('foreground'), 
+                  background=fixed_map('background'))
+
         # Menu Bar
         menubar = tk.Menu(self.root)
         self.root.config(menu=menubar)
@@ -66,11 +74,14 @@ class JekyllCMSGui:
         self.tree.heading("preview", text="Preview")
         self.tree.heading("date", text="日期")
         
-        self.tree.column("type", width=100, anchor=tk.W)
-        self.tree.column("preview", width=500, anchor=tk.W)
-        self.tree.column("date", width=200, anchor=tk.W)
+        self.tree.column("type", width=80, stretch=False, anchor=tk.W)
+        self.tree.column("preview", width=100, stretch=True, anchor=tk.W)
+        self.tree.column("date", width=150, stretch=False, anchor=tk.W)
 
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        # Configure tags for colors
+        self.tree.tag_configure("thought", background="#ffffd0")
         
         scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL, command=self.tree.yview)
         self.tree.configure(yscroll=scrollbar.set)
@@ -142,6 +153,23 @@ class JekyllCMSGui:
                 preview,
                 item.get("date", ""),
             ), tags=(item["filename"], item_type))
+
+        # Auto-fit 'type' and 'date' columns to content
+        measure_font = tkfont.nametofont("TkDefaultFont")
+        for col in ("type", "date"):
+            # Start with header text width
+            header_text = self.tree.heading(col, "text")
+            max_w = measure_font.measure(header_text)
+            
+            # Check each row's content width
+            for item_id in self.tree.get_children():
+                val = str(self.tree.set(item_id, col))
+                w = measure_font.measure(val)
+                if w > max_w:
+                    max_w = w
+            
+            # Apply new width with some padding
+            self.tree.column(col, width=max_w + 25)
 
     def new_post(self):
         result = self.content_dialog("新建文章", is_post=True)
