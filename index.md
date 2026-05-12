@@ -52,16 +52,21 @@ title: 我的动态
       elements.forEach(async el => {
         const path = el.getAttribute('data-path');
         try {
-          // Giscus API endpoint to get discussion metadata
-          const response = await fetch(`https://giscus.app/api/discussions?repo=${repo}&term=${path}&category=${category}&strict=0`);
+          // 使用 encodeURIComponent 确保路径转义正确
+          const url = `https://giscus.app/api/discussions?repo=${repo}&term=${encodeURIComponent(path)}&category=${encodeURIComponent(category)}&strict=0`;
+          const response = await fetch(url);
           if (response.ok) {
             const data = await response.json();
             if (data.discussion && data.discussion.totalCommentCount !== undefined) {
               el.innerText = `评论(${data.discussion.totalCommentCount})`;
             }
+          } else if (response.status === 404) {
+            // 404 说明还没人访问过该页面创建讨论，评论数自然为 0，无需报错
+            el.innerText = `评论(0)`;
           }
         } catch (e) {
-          console.warn("Unable to fetch Giscus comment count for", path, e);
+          // 仅在网络错误时记录日志
+          console.error("Giscus count fetch failed:", e);
         }
       });
     });
