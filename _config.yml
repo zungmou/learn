@@ -12,7 +12,7 @@ giscus:
   category_id: DIC_kwDOSaWeS84C81Q1
   mapping: pathname
   reactions_enabled: "1"
-  theme: dark
+  theme: light
   lang: zh-CN
 
 collections:
