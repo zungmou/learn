@@ -51,29 +51,34 @@ title: 我的动态
   </div>
 
   <style>
+    /* 强行覆盖主题的居中限制 */
+    .wrapper {
+      max-width: 95% !important;
+      margin-left: 20px !important;
+      margin-right: auto !important;
+    }
+
     .home {
       text-align: left;
-      max-width: 100%;
-      margin: 0;
-      padding-left: 20px;
+      width: 100%;
     }
 
     .main-container {
       display: flex;
-      gap: 20px;
+      gap: 30px; /* 增加间距 */
       margin-top: 20px;
       justify-content: flex-start;
-      /* 这里的 80vh 是为了在桌面端产生独立滚动效果 */
-      height: calc(100vh - 200px); 
+      height: calc(100vh - 180px);
+      width: 100%;
     }
 
     .column {
       flex: 1;
+      min-width: 450px; /* 增加最小宽度 */
       overflow-y: auto;
-      padding-right: 10px;
       border: 1px solid #f0f0f0;
       border-radius: 8px;
-      padding: 15px;
+      padding: 20px;
       background: #fafafa;
     }
 
