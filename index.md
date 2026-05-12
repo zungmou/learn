@@ -274,37 +274,57 @@ title: 我的动态
     /* 手机端恢复常规布局 */
     @media (max-width: 1000px) {
       .site-header {
-        display: block !important;
+        display: none !important; /* 手机端也隐藏默认头 */
       }
-      .custom-page-header {
+
+      .custom-site-header {
         flex-direction: column;
         align-items: flex-start;
+        padding: 10px 15px;
       }
-      .page-search {
+
+      .header-right {
+        flex: none;
         width: 100%;
         margin-top: 10px;
       }
+
       html, body {
-        overflow: auto;
+        overflow: auto !important; /* 恢复全局滚动 */
+        height: auto;
       }
+
       .wrapper {
-        height: auto;
-      }
-      .home {
-        height: auto;
-      }
-      .main-container {
-        flex-direction: column;
-        height: auto;
+        height: auto !important;
         overflow: visible;
       }
+
+      .page-content {
+        overflow: visible !important;
+      }
+
+      .home {
+        height: auto !important;
+        overflow: visible !important;
+      }
+
+      .main-container {
+        flex-direction: column;
+        height: auto !important;
+        overflow: visible !important;
+      }
+
       .column {
         flex: none;
         width: 100%;
-        height: auto;
-        overflow-y: visible;
+        height: auto !important;
+        overflow-y: visible !important;
         border-right: none;
-        border-bottom: 1px solid #eee;
+        border-bottom: 2px solid #eee;
+      }
+
+      .column-title {
+        position: static; /* 手机端标题不粘性，减少滚动干扰 */
       }
     }
   </style>
