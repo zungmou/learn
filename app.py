@@ -95,7 +95,7 @@ def create_post(post: PostCreate):
         layout="post",
         title=post.title,
         date=date_str,
-        source_url=post.source_url
+        source_url=post.source_url if post.source_url else None
     )
     
     with open(file_path, "wb") as f:
@@ -232,8 +232,8 @@ def update_post(filename: str, data: PostUpdate):
     if data.title:
         post["title"] = data.title
     
-    # Always update source_url (can be None/empty to remove)
-    post["source_url"] = data.source_url
+    # Always update source_url (stored as None if empty/None to remove/omit)
+    post["source_url"] = data.source_url if data.source_url else None
         
     with open(file_path, "wb") as f:
         frontmatter.dump(post, f)

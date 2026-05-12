@@ -219,7 +219,7 @@ class JekyllCMSGui:
             data = {"content": result["content"]}
             if item_type == "post":
                 data["title"] = result["title"]
-                data["source_url"] = result["url"]
+                data["source_url"] = result["source_url"]
                 
             res = self.api_call(endpoint, method="PUT", data=data)
             if res:
@@ -305,7 +305,7 @@ class JekyllCMSGui:
                 
             result["title"] = title_var.get()
             result["content"] = content
-            result["url"] = url_var.get().strip()
+            result["source_url"] = url_var.get().strip()
             dialog.destroy()
             
         def on_cancel(event=None):

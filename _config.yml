@@ -5,6 +5,16 @@ plugins:
   - jekyll-feed
   - jekyll-seo-tag
 
+giscus:
+  repo: [你的仓库名, 如: username/repo]
+  repo_id: [你的仓库ID]
+  category: Announcements
+  category_id: [你的分类ID]
+  mapping: pathname
+  reactions_enabled: '1'
+  theme: light
+  lang: zh-CN
+
 collections:
   thoughts:
     output: true
