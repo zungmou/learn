@@ -13,7 +13,9 @@ title: 我的动态
     {% for item in all_items %}
       <li style="margin-bottom: 50px; list-style: none; border-bottom: 1px solid #eee; padding-bottom: 20px;">
         <div class="post-meta">
-          {{ item.date | date: "%b %d, %y" }}
+          <a href="{{ item.url | relative_url }}" style="color: inherit; text-decoration: none;">
+            {{ item.date | date: "%b %d, %y" }}
+          </a>
         </div>
         
         {% if item.collection == "thoughts" %}
