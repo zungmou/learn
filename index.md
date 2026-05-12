@@ -44,22 +44,22 @@ title: 我的动态
   </ul>
 
   <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", async function() {
       const repo = "{{ site.giscus.repo }}";
       const category = "{{ site.giscus.category }}";
-      const elements = document.querySelectorAll('.giscus-comment-count');
+      const elements = Array.from(document.querySelectorAll('.giscus-comment-count'));
       
-      elements.forEach(async el => {
+      const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+      for (const el of elements) {
         const path = el.getAttribute('data-path');
         try {
           const targetUrl = `https://giscus.app/api/discussions?repo=${repo}&term=${encodeURIComponent(path)}&category=${encodeURIComponent(category)}&strict=0`;
-          // 使用 allorigins 代理绕过跨域拦截
           const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
           
           const response = await fetch(proxyUrl);
           if (response.ok) {
             const data = await response.json();
-            // allorigins 会把原始响应体放在 contents 字段（字符串形式）
             if (data.contents) {
               const giscusData = JSON.parse(data.contents);
               if (giscusData.discussion && giscusData.discussion.totalCommentCount !== undefined) {
@@ -68,10 +68,11 @@ title: 我的动态
             }
           }
         } catch (e) {
-          // 只有真正的网络错误才记录
           console.error("Giscus fetch error:", e);
         }
-      });
+        // 每次请求后间隔 5 秒，避免并发
+        await sleep(5000);
+      }
     });
   </script>
 </div>
