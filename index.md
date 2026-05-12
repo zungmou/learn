@@ -5,11 +5,15 @@ title: 我的动态
 
 <div class="home">
 
-  <!-- 自定义头部：标题在左，搜索在右 -->
-  <header class="custom-page-header">
-    <h1 class="page-title">我的动态</h1>
-    <div class="page-search">
-      {% include search.html %}
+  <!-- 自定义头部：站点标题在左，搜索在右 -->
+  <header class="custom-site-header">
+    <div class="header-left">
+      <a class="site-title" rel="author" href="{{ '/' | relative_url }}">{{ site.title | escape }}</a>
+    </div>
+    <div class="header-right">
+      <div class="page-search">
+        {% include search.html %}
+      </div>
     </div>
   </header>
 
@@ -121,22 +125,24 @@ title: 我的动态
     }
 
     /* 自定义头部布局 */
-    .custom-page-header {
+    .custom-site-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 20px;
+      padding: 15px 20px;
       border-bottom: 1px solid #eee;
       background: #fff;
     }
 
-    .page-title {
-      margin: 0;
-      font-size: 1.8em;
-      font-weight: bold;
+    .site-title {
+      font-size: 1.6em;
+      font-weight: 500;
+      letter-spacing: -1px;
+      color: #424242;
+      text-decoration: none;
     }
 
-    .page-search {
+    .header-right {
       flex: 0 0 400px;
     }
 
