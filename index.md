@@ -237,15 +237,16 @@ title: 我的动态
       margin: 0;
     }
 
-    /* 文章列链接字体 */
+    /* 文章列链接字体 - 统一为常规大小 */
     .posts-column .post-link {
-      font-size: 1em;
+      font-size: 1.05em;
       font-weight: 600;
     }
 
     .post-item h2 {
       margin: 5px 0;
       line-height: 1.4;
+      font-size: 1em; /* 移除 h2 的默认缩放 */
     }
 
     .thought-content {
