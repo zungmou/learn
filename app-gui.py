@@ -279,9 +279,18 @@ class JekyllCMSGui:
 
         # Content field
         tk.Label(dialog, text="内容:").pack(anchor=tk.W, padx=10, pady=(5, 0))
-        text_area = tk.Text(dialog, undo=True)
+        
+        content_frame = tk.Frame(dialog)
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+        
+        scrollbar = ttk.Scrollbar(content_frame)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        text_area = tk.Text(content_frame, undo=True, yscrollcommand=scrollbar.set)
         text_area.insert("1.0", initial_content)
-        text_area.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+        text_area.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        scrollbar.config(command=text_area.yview)
         
         result = {}
 
@@ -299,8 +308,10 @@ class JekyllCMSGui:
             result["url"] = url_var.get().strip()
             dialog.destroy()
             
-        def on_cancel():
+        def on_cancel(event=None):
             dialog.destroy()
+            
+        dialog.bind("<Escape>", on_cancel)
             
         btn_frame = tk.Frame(dialog)
         btn_frame.pack(fill=tk.X, padx=10, pady=10)
@@ -309,6 +320,13 @@ class JekyllCMSGui:
         
         dialog.transient(self.root)
         dialog.grab_set()
+        
+        # Set initial focus
+        if is_post:
+            title_entry.focus_set()
+        else:
+            text_area.focus_set()
+            
         self.root.wait_window(dialog)
         return result if "content" in result else None
 
