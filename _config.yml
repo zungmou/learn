@@ -19,3 +19,15 @@ collections:
   thoughts:
     output: true
     permalink: /thoughts/:path/
+
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+  - scope:
+      path: ""
+      type: "thoughts"
+    values:
+      layout: "thought"
