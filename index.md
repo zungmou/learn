@@ -209,6 +209,27 @@ title: 我的动态
       z-index: 10;
       font-size: 1.1em;
       flex-shrink: 0;
+      cursor: pointer; /* 提示可点击 */
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none; /* 防止频繁点击选中文字 */
+    }
+
+    /* 添加切换图标 */
+    .column-title::after {
+      content: '▾';
+      font-size: 0.8em;
+      transition: transform 0.3s ease;
+      color: #aaa;
+    }
+
+    .column.collapsed .column-title::after {
+      transform: rotate(-90deg);
+    }
+
+    .column.collapsed .item-list {
+      display: none;
     }
 
     .item-list {
@@ -334,6 +355,16 @@ title: 我的动态
       }
     }
   </style>
+
+  <script>
+    // 列折叠切换功能
+    document.querySelectorAll('.column-title').forEach(title => {
+      title.addEventListener('click', () => {
+        const column = title.parentElement;
+        column.classList.toggle('collapsed');
+      });
+    });
+  </script>
 
   <script type="text/javascript" async
     src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
