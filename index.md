@@ -73,70 +73,99 @@ title: 我的动态
   </div>
 
   <style>
-    /* 强行覆盖主题的居中限制并禁止页面滚动 */
-    html, body {
-      overflow: hidden; /* 禁止整页滚动 */
-      height: 100%;
-    }
-
+    /* 强行覆盖主题的限制，实现真正的全屏靠边 */
     .wrapper {
-      max-width: 98% !important;
-      margin-left: 20px !important;
-      margin-right: auto !important;
-      height: 100%;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      height: 100vh;
       display: flex;
       flex-direction: column;
     }
 
+    /* 隐藏主题自带的 header padding 如果有的话 */
+    .site-header {
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+
+    html, body {
+      overflow: hidden;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
     .site-footer {
-      display: none; /* 在三列沉浸模式下隐藏底部，因为已经有了统计页 */
+      display: none;
     }
 
     .home {
       text-align: left;
       width: 100%;
-      flex-grow: 1;
+      height: 100%;
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
 
+    /* 搜索框留一点边距 */
+    .home > .search-container, 
+    .home > #search-container { 
+      padding: 10px 20px;
+    }
+
     .main-container {
       display: flex;
-      gap: 20px;
-      margin-top: 15px;
+      gap: 0; /* 彻底移除间距 */
+      margin-top: 0;
       justify-content: flex-start;
-      flex-grow: 1;
+      flex: 1; /* 占据剩余所有垂直空间 */
       width: 100%;
-      overflow: hidden; /* 内部容器也不滚动 */
-      padding-bottom: 20px;
+      overflow: hidden;
     }
 
     .column {
-      flex: 1;
-      min-width: 350px;
+      height: 100%; /* 确保列高度撑满容器 */
       overflow-y: auto;
-      border: 1px solid #f0f0f0;
-      border-radius: 8px;
+      border-right: 1px solid #eee;
       background: #fafafa;
       position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .thoughts-column {
+      flex: 0 0 350px; /* 固定宽度 */
+    }
+
+    .posts-column {
+      flex: 1; /* 动态拉伸 */
+      background: #fff; /* 文章列用白色区分 */
+    }
+
+    .links-column {
+      flex: 0 0 300px; /* 固定宽度 */
+      border-right: none;
     }
 
     .column-title {
       position: sticky;
       top: 0;
-      background: #fafafa;
+      background: inherit;
       padding: 15px 20px;
       margin: 0;
       border-bottom: 2px solid #eee;
       z-index: 10;
-      font-size: 1.2em;
+      font-size: 1.1em;
+      flex-shrink: 0;
     }
 
     .item-list {
       list-style: none;
       margin: 0;
       padding: 20px;
+      flex: 1;
     }
 
     .thought-item, .post-item {
@@ -146,7 +175,7 @@ title: 我的动态
     }
 
     .post-link {
-      font-size: 0.7em;
+      font-size: 0.9em; /* 稍微调大一点点 */
       font-weight: 600;
     }
 
@@ -167,26 +196,39 @@ title: 我的动态
     }
 
     .column::-webkit-scrollbar {
-      width: 6px;
+      width: 4px;
     }
     .column::-webkit-scrollbar-thumb {
-      background-color: #ddd;
+      background-color: #eee;
       border-radius: 10px;
     }
+    .column:hover::-webkit-scrollbar-thumb {
+      background-color: #ccc;
+    }
 
-    /* 手机端自适应 */
+    /* 手机端恢复常规布局 */
     @media (max-width: 1000px) {
       html, body {
-        overflow: auto; /* 手机端恢复滚动 */
+        overflow: auto;
+      }
+      .wrapper {
+        height: auto;
+      }
+      .home {
+        height: auto;
       }
       .main-container {
         flex-direction: column;
+        height: auto;
         overflow: visible;
       }
       .column {
-        min-width: unset;
+        flex: none;
+        width: 100%;
+        height: auto;
         overflow-y: visible;
-        margin-bottom: 20px;
+        border-right: none;
+        border-bottom: 1px solid #eee;
       }
     }
   </style>
