@@ -1,0 +1,16 @@
+---
+layout: none
+---
+{% assign all_search_items = site.posts | concat: site.thoughts %}
+[
+  {% for item in all_search_items %}
+    {
+      "title"    : "{% if item.title %}{{ item.title | escape }}{% else %}Thought: {{ item.date | date: '%Y-%m-%d %H:%M' }}{% endif %}",
+      "category" : "{% if item.collection == 'posts' %}Blog{% else %}Thought{% endif %}",
+      "url"      : "{{ item.url | relative_url }}",
+      "date"     : "{{ item.date | date: '%Y-%m-%d' }}",
+      "content"  : {{ item.content | strip_html | strip_newlines | jsonify }}
+    }
+    {% unless forloop.last %},{% endunless %}
+  {% endfor %}
+]

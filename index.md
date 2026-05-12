@@ -5,6 +5,8 @@ title: 我的动态
 
 <div class="home">
 
+  {% include search.html %}
+
   {% assign posts = site.posts %}
   {% assign thoughts = site.thoughts %}
   {% assign all_items = posts | concat: thoughts | sort: 'date' | reverse %}

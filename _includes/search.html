@@ -1,0 +1,66 @@
+<!-- HTML 结构 -->
+<div class="search-container" style="margin-bottom: 30px; position: relative;">
+  <div style="display: flex; gap: 10px;">
+    <input type="text" id="search-input" placeholder="搜索文章或想法..." style="flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none;">
+    <button onclick="googleSearch()" style="padding: 10px 15px; background: #4285f4; color: white; border: none; border-radius: 5px; cursor: pointer;">
+      Google 搜索
+    </button>
+  </div>
+  <ul id="results-container" style="list-style: none; padding: 0; margin-top: 10px; border: 1px solid #eee; border-radius: 5px; display: none; background: white; position: absolute; width: 100%; z-index: 1000; max-height: 400px; overflow-y: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></ul>
+</div>
+
+<!-- 引入 Simple-Jekyll-Search -->
+<script src="https://unpkg.com/simple-jekyll-search@latest/dest/simple-jekyll-search.min.js"></script>
+
+<script>
+  // 初始化本地搜索
+  const sjs = SimpleJekyllSearch({
+    searchInput: document.getElementById('search-input'),
+    resultsContainer: document.getElementById('results-container'),
+    json: '{{ "/search.json" | relative_url }}',
+    searchResultTemplate: '<li style="padding: 10px; border-bottom: 1px solid #eee;"><a href="{url}" style="text-decoration: none; color: #333;"><span style="font-weight: bold;">{title}</span> <small style="color: #888;">{date}</small><div style="font-size: 0.85em; color: #666; margin-top: 5px;">{content}</div></a></li>',
+    noResultsText: '<li style="padding: 10px;">未找到相关内容</li>',
+    limit: 10,
+    fuzzy: false
+  });
+
+  // 控制结果列表显示/隐藏
+  const searchInput = document.getElementById('search-input');
+  const resultsContainer = document.getElementById('results-container');
+
+  searchInput.addEventListener('input', function() {
+    if (this.value.length > 0) {
+      resultsContainer.style.display = 'block';
+    } else {
+      resultsContainer.style.display = 'none';
+    }
+  });
+
+  // 点击外部关闭结果
+  document.addEventListener('click', function(e) {
+    if (!document.querySelector('.search-container').contains(e.target)) {
+      resultsContainer.style.display = 'none';
+    }
+  });
+
+  // 方案1：Google 搜索函数
+  function googleSearch() {
+    const query = searchInput.value;
+    if (query) {
+      const site = window.location.hostname;
+      window.open(`https://www.google.com/search?q=site:${site} ${query}`, '_blank');
+    } else {
+      alert('请输入搜索关键词');
+    }
+  }
+</script>
+
+<style>
+  #results-container li:hover {
+    background-color: #f9f9f9;
+  }
+  #results-container em {
+    background-color: #ffeb3b;
+    font-style: normal;
+  }
+</style>
