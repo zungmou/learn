@@ -143,11 +143,17 @@ title: 我的动态
     }
 
     .site-title {
-      font-size: 1.6em;
-      font-weight: 500;
-      letter-spacing: -1px;
-      color: #424242;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.8em;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #222;
       text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .site-title:hover {
+      color: #007bff;
     }
 
     .header-right {
