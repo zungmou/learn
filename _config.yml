@@ -6,13 +6,13 @@ plugins:
   - jekyll-seo-tag
 
 giscus:
-  repo: [你的仓库名, 如: username/repo]
-  repo_id: [你的仓库ID]
+  repo: zungmou/learn
+  repo_id: R_kgDOSaWeSw
   category: Announcements
-  category_id: [你的分类ID]
+  category_id: DIC_kwDOSaWeS84C81Q1
   mapping: pathname
   reactions_enabled: '1'
-  theme: light
+  theme: dark
   lang: zh-CN
 
 collections:
