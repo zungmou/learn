@@ -51,10 +51,18 @@ title: 我的动态
   </div>
 
   <style>
+    .home {
+      text-align: left;
+      max-width: 100%;
+      margin: 0;
+      padding-left: 20px;
+    }
+
     .main-container {
       display: flex;
       gap: 20px;
       margin-top: 20px;
+      justify-content: flex-start;
       /* 这里的 80vh 是为了在桌面端产生独立滚动效果 */
       height: calc(100vh - 200px); 
     }
@@ -77,6 +85,7 @@ title: 我的动态
       margin-top: 0;
       border-bottom: 2px solid #eee;
       z-index: 10;
+      font-size: 1.2em;
     }
 
     .item-list {
@@ -89,6 +98,16 @@ title: 我的动态
       margin-bottom: 30px;
       padding-bottom: 15px;
       border-bottom: 1px solid #eee;
+    }
+
+    .post-link {
+      font-size: 0.7em; /* 降低标题字体大小至常规 */
+      font-weight: 600;
+    }
+
+    .post-item h2 {
+      margin: 5px 0;
+      line-height: 1.4;
     }
 
     .thought-content {
