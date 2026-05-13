@@ -9,6 +9,7 @@ permalink: /api/latest.json
     {% for item in thoughts limit:20 %}
       {
         "date": "{{ item.date | date: '%b %d, %y' }}",
+        "url": "{{ item.url | relative_url }}",
         "content": {{ item.content | jsonify }},
         "id": "{{ item.url }}"
       }{% unless forloop.last %},{% endunless %}

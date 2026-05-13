@@ -26,7 +26,7 @@ title: 我的动态
         {% for item in thoughts %}
           <li class="thought-item">
             <div class="post-meta">
-              {{ item.date | date: "%b %d, %y" }}
+              <a href="{{ item.url | relative_url }}">{{ item.date | date: "%b %d, %y" }}</a>
             </div>
             <div class="thought-content">
               {{ item.content }}
@@ -44,7 +44,7 @@ title: 我的动态
         {% for item in posts %}
           <li class="post-item">
             <div class="post-meta">
-              {{ item.date | date: "%b %d, %y" }}
+              <a href="{{ item.url | relative_url }}">{{ item.date | date: "%b %d, %y" }}</a>
             </div>
             <h2>
               <a class="post-link" href="{{ item.url | relative_url }}">
@@ -291,6 +291,15 @@ title: 我的动态
       color: #828282;
     }
 
+    .post-meta a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .post-meta a:hover {
+      text-decoration: underline;
+    }
+
     .column::-webkit-scrollbar {
       width: 4px;
     }
@@ -397,7 +406,9 @@ title: 我的动态
         if (thoughtsList && data.thoughts) {
           thoughtsList.innerHTML = data.thoughts.map(item => `
             <li class="thought-item">
-              <div class="post-meta">${item.date}</div>
+              <div class="post-meta">
+                <a href="${item.url}">${item.date}</a>
+              </div>
               <div class="thought-content">${item.content}</div>
             </li>
           `).join('');
@@ -413,7 +424,9 @@ title: 我的动态
         if (postsList && data.posts) {
           postsList.innerHTML = data.posts.map(item => `
             <li class="post-item">
-              <div class="post-meta">${item.date}</div>
+              <div class="post-meta">
+                <a href="${item.url}">${item.date}</a>
+              </div>
               <h2>
                 <a class="post-link" href="${item.url}">${item.title}</a>
               </h2>
