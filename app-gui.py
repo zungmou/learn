@@ -50,7 +50,7 @@ class JekyllCMSGui:
         action_menu.add_separator()
         action_menu.add_command(label="Edit Selected", command=self.edit_selected)
         action_menu.add_command(label="Delete Selected", command=self.delete_selected)
-        action_menu.add_command(label="Refresh", command=self.refresh_list)
+        action_menu.add_command(label="Refresh", command=self.refresh_list, accelerator="F5")
         action_menu.add_separator()
         action_menu.add_command(label="Exit", command=self.root.quit)
 
@@ -96,6 +96,9 @@ class JekyllCMSGui:
         
         # Bind right click (Button-3 is right click on Windows/Linux)
         self.tree.bind("<Button-3>", self.show_context_menu)
+        
+        # Bind F5 to refresh
+        self.root.bind("<F5>", lambda e: self.refresh_list())
 
     def show_context_menu(self, event):
         # Select item on right click

@@ -11,7 +11,7 @@ permalink: /api/latest.json
         "date": "{{ item.date | date: '%b %d, %y' }}",
         "url": "{{ item.url | relative_url }}",
         "content": {{ item.content | jsonify }},
-        "id": "{{ item.url }}"
+        "id": {{ item.url | jsonify }}
       }{% unless forloop.last %},{% endunless %}
     {% endfor %}
   ],
@@ -23,7 +23,7 @@ permalink: /api/latest.json
         "title": {{ item.title | jsonify }},
         "url": "{{ item.url | relative_url }}",
         "excerpt": {{ item.excerpt | jsonify }},
-        "id": "{{ item.url }}"
+        "id": {{ item.url | jsonify }}
       }{% unless forloop.last %},{% endunless %}
     {% endfor %}
   ]

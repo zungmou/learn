@@ -13,7 +13,7 @@
   }
 }
 
-.post-content {
+.post-content, .thought-content {
   h1 {
     font-size: 1.7rem;
     @include media-query($on-laptop) {
@@ -40,5 +40,33 @@
   }
   h6 {
     font-size: 0.9rem;
+  }
+
+  // Table styles
+  table {
+    margin-bottom: $spacing-unit;
+    width: 100%;
+    text-align: $table-text-align;
+    color: lighten($text-color, 18%);
+    border-collapse: collapse;
+    border: 1px solid $grey-color-light;
+    display: block;
+    overflow-x: auto;
+
+    tr {
+      &:nth-child(even) {
+        background-color: lighten($grey-color-light, 6%);
+      }
+    }
+
+    th, td {
+      padding: ($spacing-unit / 3) ($spacing-unit / 2);
+      border: 1px solid $grey-color-light;
+    }
+
+    th {
+      background-color: lighten($grey-color-light, 3%);
+      border-bottom-color: darken($grey-color-light, 4%);
+    }
   }
 }

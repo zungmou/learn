@@ -294,6 +294,8 @@ title: 我的动态
     .post-meta a {
       color: inherit;
       text-decoration: none;
+      position: relative;
+      z-index: 5;
     }
 
     .post-meta a:hover {
