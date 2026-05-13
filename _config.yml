@@ -31,3 +31,6 @@ defaults:
       type: "thoughts"
     values:
       layout: "thought"
+
+kramdown:
+  math_engine: mathjax
