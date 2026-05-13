@@ -454,6 +454,7 @@ title: 我的动态
     MathJax.Hub.Config({
       tex2jax: {
         inlineMath: [['$','$'], ['\\(','\\)']],
+        displayMath: [['$$','$$'], ['\\[','\\]']],
         processEscapes: true
       }
     });
