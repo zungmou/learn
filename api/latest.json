@@ -1,0 +1,29 @@
+---
+layout: none
+permalink: /api/latest.json
+---
+{
+  "show_excerpts": {{ site.show_excerpts | jsonify }},
+  "thoughts": [
+    {% assign thoughts = site.thoughts | sort: 'date' | reverse %}
+    {% for item in thoughts limit:20 %}
+      {
+        "date": "{{ item.date | date: '%b %d, %y' }}",
+        "content": {{ item.content | jsonify }},
+        "id": "{{ item.url }}"
+      }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ],
+  "posts": [
+    {% assign posts = site.posts | sort: 'date' | reverse %}
+    {% for item in posts limit:20 %}
+      {
+        "date": "{{ item.date | date: '%b %d, %y' }}",
+        "title": {{ item.title | jsonify }},
+        "url": "{{ item.url | relative_url }}",
+        "excerpt": {{ item.excerpt | jsonify }},
+        "id": "{{ item.url }}"
+      }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ]
+}

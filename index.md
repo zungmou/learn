@@ -21,7 +21,7 @@ title: 我的动态
     <!-- 左侧：想法 -->
     <div class="column thoughts-column">
       <h2 class="column-title">💡 想法</h2>
-      <ul class="item-list">
+      <ul class="item-list" id="thoughts-list">
         {% assign thoughts = site.thoughts | sort: 'date' | reverse %}
         {% for item in thoughts %}
           <li class="thought-item">
@@ -39,7 +39,7 @@ title: 我的动态
     <!-- 中间：文章 -->
     <div class="column posts-column">
       <h2 class="column-title">✍️ 文章</h2>
-      <ul class="item-list">
+      <ul class="item-list" id="posts-list">
         {% assign posts = site.posts | sort: 'date' | reverse %}
         {% for item in posts %}
           <li class="post-item">
@@ -364,6 +364,67 @@ title: 我的动态
         column.classList.toggle('collapsed');
       });
     });
+
+    // --- 异步刷新逻辑 ---
+    let lastContentHash = null;
+
+    async function fetchLatest() {
+      try {
+        const res = await fetch('{{ "/api/latest.json" | relative_url }}');
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        // 使用 JSON 字符串作为简单的哈希比较
+        const currentHash = JSON.stringify(data);
+        if (currentHash === lastContentHash) return;
+        
+        // 如果是首次加载且数据一致，则不重新渲染
+        if (lastContentHash === null) {
+          lastContentHash = currentHash;
+          return;
+        }
+        lastContentHash = currentHash;
+
+        console.log('Detected content update, refreshing columns...');
+
+        // 更新想法
+        const thoughtsList = document.getElementById('thoughts-list');
+        if (thoughtsList && data.thoughts) {
+          thoughtsList.innerHTML = data.thoughts.map(item => `
+            <li class="thought-item">
+              <div class="post-meta">${item.date}</div>
+              <div class="thought-content">${item.content}</div>
+            </li>
+          `).join('');
+          
+          // 如果有 MathJax，重新渲染
+          if (window.MathJax && MathJax.Hub && MathJax.Hub.Queue) {
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub, thoughtsList]);
+          }
+        }
+
+        // 更新文章
+        const postsList = document.getElementById('posts-list');
+        if (postsList && data.posts) {
+          postsList.innerHTML = data.posts.map(item => `
+            <li class="post-item">
+              <div class="post-meta">${item.date}</div>
+              <h2>
+                <a class="post-link" href="${item.url}">${item.title}</a>
+              </h2>
+              ${data.show_excerpts ? item.excerpt : ''}
+            </li>
+          `).join('');
+        }
+      } catch (err) {
+        console.error('Failed to fetch latest content:', err);
+      }
+    }
+
+    // 每 20 秒检查一次更新
+    setInterval(fetchLatest, 20000);
+    // 延迟第一次检查，确保页面完全加载
+    setTimeout(fetchLatest, 5000);
   </script>
 
   <script type="text/javascript" async
