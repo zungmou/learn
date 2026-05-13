@@ -370,7 +370,8 @@ title: 我的动态
 
     async function fetchLatest() {
       try {
-        const res = await fetch('{{ "/api/latest.json" | relative_url }}');
+        // 添加时间戳以绕过浏览器缓存
+        const res = await fetch('{{ "/api/latest.json" | relative_url }}?_t=' + Date.now());
         if (!res.ok) return;
         const data = await res.json();
         
