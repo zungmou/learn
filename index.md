@@ -186,7 +186,9 @@ title: 我的动态
     }
 
     .thoughts-column {
-      flex: 0 0 350px;
+      flex: 0 0 30%;
+      min-width: 300px;
+      max-width: 350px;
     }
 
     .posts-column {
@@ -195,7 +197,9 @@ title: 我的动态
     }
 
     .links-column {
-      flex: 0 0 300px;
+      flex: 0 0 25%;
+      min-width: 250px;
+      max-width: 300px;
       border-right: none;
     }
 
@@ -298,8 +302,8 @@ title: 我的动态
       background-color: #ccc;
     }
 
-    /* 手机端恢复常规布局 */
-    @media (max-width: 1000px) {
+    /* 手机端恢复常规布局 - 仅在竖屏且宽度较小时触发，或者宽度极小时触发 */
+    @media (max-width: 1000px) and (orientation: portrait), (max-width: 700px) {
       .site-header {
         display: none !important; /* 手机端也隐藏默认头 */
       }
