@@ -45,8 +45,7 @@ class JekyllCMSGui:
 
         action_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Actions", menu=action_menu)
-        action_menu.add_command(label="New Post", command=self.new_post)
-        action_menu.add_command(label="New Thought", command=self.new_thought)
+        action_menu.add_command(label="New Moment", command=self.new_moment)
         action_menu.add_separator()
         action_menu.add_command(label="Edit Selected", command=self.edit_selected)
         action_menu.add_command(label="Delete Selected", command=self.delete_selected)
@@ -81,7 +80,7 @@ class JekyllCMSGui:
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
         # Configure tags for colors
-        self.tree.tag_configure("thought", background="#ffffd0")
+        self.tree.tag_configure("moment", background="#ffffd0")
         
         scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL, command=self.tree.yview)
         self.tree.configure(yscroll=scrollbar.set)
@@ -143,13 +142,9 @@ class JekyllCMSGui:
         
         for item in items:
             item_type = item["type"]
-            display_type = "文章" if item_type == "post" else "想法"
+            display_type = "动态"
             
-            # Logic: Post shows title, Thought shows snippet/content
-            if item_type == "post":
-                preview = item.get("title") or "(无标题)"
-            else:
-                preview = item.get("snippet") or item.get("content") or "(无内容)"
+            preview = item.get("title") or item.get("snippet") or item.get("content") or "(无内容)"
             
             self.tree.insert("", tk.END, values=(
                 display_type,
@@ -174,21 +169,12 @@ class JekyllCMSGui:
             # Apply new width with some padding
             self.tree.column(col, width=max_w + 25)
 
-    def new_post(self):
-        categories = self.api_call("/categories")
-        result = self.content_dialog("新建文章", is_post=True, categories=categories)
+    def new_moment(self):
+        result = self.content_dialog("新建动态")
         if result:
-            res = self.api_call("/posts", method="POST", data=result)
+            res = self.api_call("/moments", method="POST", data={"content": result["content"]})
             if res:
-                messagebox.showinfo("成功", f"文章已创建: {res['filename']}")
-                self.refresh_list()
-
-    def new_thought(self):
-        result = self.content_dialog("新建想法", is_post=False)
-        if result:
-            res = self.api_call("/thoughts", method="POST", data={"content": result["content"]})
-            if res:
-                messagebox.showinfo("成功", f"想法已创建: {res['filename']}")
+                messagebox.showinfo("成功", f"动态已创建: {res['filename']}")
                 self.refresh_list()
 
     def edit_selected(self):
@@ -209,28 +195,15 @@ class JekyllCMSGui:
         
         current_content = details.get("content", "")
         current_title = details.get("metadata", {}).get("title", "")
-        current_source_url = details.get("metadata", {}).get("source_url", "")
-        current_category = details.get("metadata", {}).get("category", "")
-        
-        categories = self.api_call("/categories") if item_type == "post" else None
         
         result = self.content_dialog(
-            f"编辑{ '文章' if item_type == 'post' else '想法' }", 
-            is_post=(item_type == "post"),
+            "编辑动态", 
             initial_title=current_title,
-            initial_content=current_content,
-            initial_url=current_source_url,
-            initial_category=current_category,
-            categories=categories
+            initial_content=current_content
         )
         
         if result:
-            data = {"content": result["content"]}
-            if item_type == "post":
-                data["title"] = result["title"]
-                data["source_url"] = result["source_url"]
-                data["category"] = result["category"]
-                
+            data = {"content": result["content"], "title": result["title"]}
             res = self.api_call(endpoint, method="PUT", data=data)
             if res:
                 messagebox.showinfo("成功", f"已更新 {filename}")
@@ -248,14 +221,14 @@ class JekyllCMSGui:
         item_type = tags[1]
         display_name = self.tree.item(item_id, "values")[1]
         
-        if messagebox.askyesno("确认删除", f"确定要删除 {item_type} '{display_name}' 吗？\n此操作将触发 Git 同步且不可撤销。"):
+        if messagebox.askyesno("确认删除", f"确定要删除动态 '{display_name}' 吗？\n此操作将触发 Git 同步且不可撤销。"):
             endpoint = f"/{item_type}s/{filename}"
             res = self.api_call(endpoint, method="DELETE")
             if res:
                 messagebox.showinfo("成功", f"已删除 {filename}")
                 self.refresh_list()
 
-    def content_dialog(self, window_title, is_post=True, initial_title="", initial_content="", initial_url="", initial_category="", categories=None):
+    def content_dialog(self, window_title, initial_title="", initial_content=""):
         dialog = tk.Toplevel(self.root)
         dialog.title(window_title)
         
@@ -270,30 +243,11 @@ class JekyllCMSGui:
         y = root_y + (root_height // 2) - (height // 2)
         dialog.geometry(f"{width}x{height}+{x}+{y}")
         
-        # Title field
-        tk.Label(dialog, text="标题:").pack(anchor=tk.W, padx=10, pady=(10, 0))
+        # Title field (optional for moments)
+        tk.Label(dialog, text="标题 (可选):").pack(anchor=tk.W, padx=10, pady=(10, 0))
         title_var = tk.StringVar(value=initial_title)
         title_entry = tk.Entry(dialog, textvariable=title_var)
         title_entry.pack(fill=tk.X, padx=10, pady=5)
-        if not is_post:
-            title_entry.config(state="disabled")
-            title_var.set("(想法无标题)")
-
-        # Category field (for posts)
-        tk.Label(dialog, text="分类 (可选):").pack(anchor=tk.W, padx=10, pady=(5, 0))
-        category_var = tk.StringVar(value=initial_category or "")
-        category_combo = ttk.Combobox(dialog, textvariable=category_var, values=categories or [])
-        category_combo.pack(fill=tk.X, padx=10, pady=5)
-        if not is_post:
-            category_combo.config(state="disabled")
-
-        # URL field
-        tk.Label(dialog, text="来源 URL (可选):").pack(anchor=tk.W, padx=10, pady=(5, 0))
-        url_var = tk.StringVar(value=initial_url or "")
-        url_entry = tk.Entry(dialog, textvariable=url_var)
-        url_entry.pack(fill=tk.X, padx=10, pady=5)
-        if not is_post:
-            url_entry.config(state="disabled")
 
         # Content field
         tk.Label(dialog, text="内容:").pack(anchor=tk.W, padx=10, pady=(5, 0))
@@ -314,17 +268,12 @@ class JekyllCMSGui:
 
         def on_ok():
             content = text_area.get("1.0", tk.END).strip()
-            if is_post and not title_var.get().strip():
-                messagebox.showwarning("警告", "标题不能为空")
-                return
             if not content:
                 messagebox.showwarning("警告", "内容不能为空")
                 return
                 
-            result["title"] = title_var.get()
+            result["title"] = title_var.get().strip()
             result["content"] = content
-            result["source_url"] = url_var.get().strip()
-            result["category"] = category_var.get().strip()
             dialog.destroy()
             
         def on_cancel(event=None):
@@ -341,10 +290,7 @@ class JekyllCMSGui:
         dialog.grab_set()
         
         # Set initial focus
-        if is_post:
-            title_entry.focus_set()
-        else:
-            text_area.focus_set()
+        text_area.focus_set()
             
         self.root.wait_window(dialog)
         return result if "content" in result else None

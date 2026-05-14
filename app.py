@@ -5,6 +5,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import frontmatter
 from pathlib import Path
+import subprocess
 
 import asyncio
 from contextlib import asynccontextmanager
@@ -13,7 +14,7 @@ def git_sync_periodic():
     try:
         # 1. 检查指定目录是否有改动
         status = subprocess.run(
-            ["git", "status", "--porcelain", str(POSTS_DIR), str(THOUGHTS_DIR)],
+            ["git", "status", "--porcelain", str(POSTS_DIR)],
             capture_output=True, text=True
         ).stdout.strip()
         
@@ -21,7 +22,7 @@ def git_sync_periodic():
             return # 没有改动，跳过
             
         # 2. 仅添加指定目录的更改
-        subprocess.run(["git", "add", str(POSTS_DIR), str(THOUGHTS_DIR)], check=True)
+        subprocess.run(["git", "add", str(POSTS_DIR)], check=True)
         
         # 3. 提交并推送
         subprocess.run(["git", "commit", "-m", "Auto-sync content updates"], check=True)
@@ -50,13 +51,11 @@ app = FastAPI(title="Jekyll CMS API", lifespan=lifespan)
 # 基础路径
 BASE_DIR = Path(".")
 POSTS_DIR = BASE_DIR / "_posts"
-THOUGHTS_DIR = BASE_DIR / "_thoughts"
 
 import yaml
 
 # 确保目录存在
 POSTS_DIR.mkdir(exist_ok=True)
-THOUGHTS_DIR.mkdir(exist_ok=True)
 
 def get_category_config():
     config_path = BASE_DIR / "_config.yml"
@@ -95,12 +94,7 @@ def sanitize_math_delimiters(content: str) -> str:
 class ContentBase(BaseModel):
     content: str
 
-class PostCreate(ContentBase):
-    title: str
-    category: Optional[str] = None
-    source_url: Optional[str] = None
-
-class ThoughtCreate(ContentBase):
+class MomentCreate(ContentBase):
     pass
 
 class ContentResponse(BaseModel):
@@ -115,8 +109,6 @@ def get_current_jekyll_date():
 def get_filename_date():
     return datetime.datetime.now().strftime("%Y-%m-%d")
 
-import subprocess
-
 @app.get("/categories")
 def get_categories():
     category_names = get_category_config()
@@ -129,59 +121,29 @@ def get_categories():
             categories.add(map_slug_to_category(cat))
     return sorted(list(categories))
 
-@app.post("/posts", response_model=ContentResponse)
-def create_post(post: PostCreate):
-    date_str = get_current_jekyll_date()
-    file_date = date_str.split(' ')[0]
-    
-    # 使用时间戳确保文件名唯一且不包含中文
-    timestamp = datetime.datetime.now().strftime("%H%M%S")
-    filename = f"{file_date}-post-{timestamp}.md"
-    file_path = POSTS_DIR / filename
-    
-    sanitized_content = sanitize_math_delimiters(post.content)
-    post_data = frontmatter.Post(
-        sanitized_content,
-        layout="post",
-        title=post.title,
-        category=map_category_to_slug(post.category),
-        date=date_str,
-        source_url=post.source_url if post.source_url else None
-    )
-    
-    with open(file_path, "wb") as f:
-        frontmatter.dump(post_data, f)
-        
-    return {
-        "filename": filename,
-        "type": "post",
-        "metadata": post_data.metadata,
-        "content": sanitized_content
-    }
-
-@app.post("/thoughts", response_model=ContentResponse)
-def create_thought(thought: ThoughtCreate):
+@app.post("/moments", response_model=ContentResponse)
+def create_moment(moment: MomentCreate):
     date_str = get_current_jekyll_date()
     file_date = date_str.split(' ')[0]
     
     # 使用时间戳确保文件名唯一
     timestamp = datetime.datetime.now().strftime("%H%M%S")
-    filename = f"{file_date}-thought-{timestamp}.md"
-    file_path = THOUGHTS_DIR / filename
+    filename = f"{file_date}-{timestamp}.md"
+    file_path = POSTS_DIR / filename
     
-    sanitized_content = sanitize_math_delimiters(thought.content)
-    thought_data = frontmatter.Post(
+    sanitized_content = sanitize_math_delimiters(moment.content)
+    moment_data = frontmatter.Post(
         sanitized_content,
         date=date_str
     )
     
     with open(file_path, "wb") as f:
-        frontmatter.dump(thought_data, f)
+        frontmatter.dump(moment_data, f)
         
     return {
         "filename": filename,
-        "type": "thought",
-        "metadata": thought_data.metadata,
+        "type": "moment",
+        "metadata": moment_data.metadata,
         "content": sanitized_content
     }
 
@@ -200,30 +162,18 @@ def search_content(q: str):
     results = []
     q = q.lower()
     
-    # 搜索文章
+    # 搜索动态 (现在都在 _posts 中)
     for f in POSTS_DIR.glob("*.md"):
-        post = frontmatter.load(f)
-        title = str(post.get("title", "")).lower()
-        content = post.content.lower()
+        moment = frontmatter.load(f)
+        title = str(moment.get("title", "")).lower()
+        content = moment.content.lower()
         if q in title or q in content:
             results.append({
                 "filename": f.name,
-                "type": "post",
-                "title": post.get("title"),
-                "date": post.get("date"),
-                "snippet": post.content[:100] + "..."
-            })
-            
-    # 搜索想法
-    for f in THOUGHTS_DIR.glob("*.md"):
-        thought = frontmatter.load(f)
-        content = thought.content.lower()
-        if q in content:
-            results.append({
-                "filename": f.name,
-                "type": "thought",
-                "date": thought.get("date"),
-                "snippet": thought.content[:100] + "..."
+                "type": "moment",
+                "title": moment.get("title"),
+                "date": moment.get("date"),
+                "snippet": moment.content[:100] + "..."
             })
             
     return sorted(results, key=lambda x: str(x.get("date")), reverse=True)
@@ -231,103 +181,49 @@ def search_content(q: str):
 def list_all_content():
     results = []
     for f in POSTS_DIR.glob("*.md"):
-        post = frontmatter.load(f)
+        moment = frontmatter.load(f)
         results.append({
             "filename": f.name,
-            "type": "post",
-            "title": post.get("title"),
-            "date": post.get("date"),
-            "snippet": post.content[:100] + "..." if post.content else ""
-        })
-    for f in THOUGHTS_DIR.glob("*.md"):
-        thought = frontmatter.load(f)
-        results.append({
-            "filename": f.name,
-            "type": "thought",
-            "date": thought.get("date"),
-            "snippet": thought.content[:100] + "..." if thought.content else ""
+            "type": "moment",
+            "title": moment.get("title"),
+            "date": moment.get("date"),
+            "snippet": moment.content[:100] + "..." if moment.content else ""
         })
     return sorted(results, key=lambda x: str(x.get("date")), reverse=True)
 
-class PostUpdate(BaseModel):
+class MomentUpdate(BaseModel):
+    content: str
     title: Optional[str] = None
-    category: Optional[str] = None
-    source_url: Optional[str] = None
-    content: str
 
-class ThoughtUpdate(BaseModel):
-    content: str
-
-@app.get("/posts/{filename}")
-def get_post(filename: str):
+@app.get("/moments/{filename}")
+def get_moment(filename: str):
     file_path = POSTS_DIR / filename
     if not file_path.exists():
-        raise HTTPException(status_code=404, detail="Post not found")
-    post = frontmatter.load(file_path)
-    metadata = post.metadata.copy()
-    if metadata.get("category"):
-        metadata["category"] = map_slug_to_category(metadata["category"])
-    return {"metadata": metadata, "content": post.content}
+        raise HTTPException(status_code=404, detail="Moment not found")
+    moment = frontmatter.load(file_path)
+    return {"metadata": moment.metadata, "content": moment.content}
 
-@app.get("/thoughts/{filename}")
-def get_thought(filename: str):
-    file_path = THOUGHTS_DIR / filename
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail="Thought not found")
-    thought = frontmatter.load(file_path)
-    return {"metadata": thought.metadata, "content": thought.content}
-
-@app.put("/posts/{filename}")
-def update_post(filename: str, data: PostUpdate):
+@app.put("/moments/{filename}")
+def update_moment(filename: str, data: MomentUpdate):
     file_path = POSTS_DIR / filename
     if not file_path.exists():
-        raise HTTPException(status_code=404, detail="Post not found")
+        raise HTTPException(status_code=404, detail="Moment not found")
     
-    post = frontmatter.load(file_path)
-    post.content = sanitize_math_delimiters(data.content)
+    moment = frontmatter.load(file_path)
+    moment.content = sanitize_math_delimiters(data.content)
     if data.title:
-        post["title"] = data.title
-    
-    # Update category
-    post["category"] = map_category_to_slug(data.category)
-    
-    # Always update source_url (stored as None if empty/None to remove/omit)
-    post["source_url"] = data.source_url if data.source_url else None
+        moment["title"] = data.title
         
     with open(file_path, "wb") as f:
-        frontmatter.dump(post, f)
+        frontmatter.dump(moment, f)
     
     return {"status": "success", "filename": filename}
 
-@app.put("/thoughts/{filename}")
-def update_thought(filename: str, data: ThoughtUpdate):
-    file_path = THOUGHTS_DIR / filename
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail="Thought not found")
-    
-    thought = frontmatter.load(file_path)
-    thought.content = sanitize_math_delimiters(data.content)
-        
-    with open(file_path, "wb") as f:
-        frontmatter.dump(thought, f)
-    
-    return {"status": "success", "filename": filename}
-
-@app.delete("/posts/{filename}")
-def delete_post(filename: str):
+@app.delete("/moments/{filename}")
+def delete_moment(filename: str):
     file_path = POSTS_DIR / filename
     if not file_path.exists():
-        raise HTTPException(status_code=404, detail="Post not found")
-    
-    os.remove(file_path)
-    
-    return {"status": "success", "message": f"Deleted {filename}"}
-
-@app.delete("/thoughts/{filename}")
-def delete_thought(filename: str):
-    file_path = THOUGHTS_DIR / filename
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail="Thought not found")
+        raise HTTPException(status_code=404, detail="Moment not found")
     
     os.remove(file_path)
     

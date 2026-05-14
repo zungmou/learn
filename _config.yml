@@ -15,22 +15,12 @@ giscus:
   theme: light
   lang: zh-CN
 
-collections:
-  moments:
-    output: true
-    permalink: /moments/:path/
-
 defaults:
   - scope:
       path: ""
       type: "posts"
     values:
-      layout: "post"
-  - scope:
-      path: ""
-      type: "moments"
-    values:
-      layout: "thought"
+      layout: "moment"
 
 kramdown:
   math_engine: mathjax
@@ -40,4 +30,4 @@ category_names:
   cs: 计算机科学
   tech: 技术
   life: 生活
-  thought: 动态
+  moment: 动态

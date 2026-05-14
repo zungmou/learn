@@ -18,45 +18,22 @@ title: 我的动态
   </header>
 
   <div class="main-container">
-    <!-- 左侧：动态 -->
-    <div class="column moments-column">
+    <!-- 动态主时间线 -->
+    <div class="column moments-column" style="flex: 1; max-width: none;">
       <h2 class="column-title">💡 动态</h2>
-      <ul class="item-list" id="thoughts-list">
-        {% assign thoughts = site.moments | sort: 'date' | reverse %}
-        {% for item in thoughts %}
-          <li class="thought-item">
+      <ul class="item-list" id="moments-list">
+        {% assign moments = site.posts | sort: 'date' | reverse %}
+        {% for item in moments %}
+          <li class="moment-item">
             <div class="post-meta">
               <a href="{{ item.url | relative_url }}">{{ item.date | date: "%b %d, %y" }}</a>
             </div>
-            <div class="thought-content">
+            <div class="moment-content">
+              {% if item.title %}
+                <h2 style="margin-top: 0;"><a href="{{ item.url | relative_url }}" style="color: inherit; text-decoration: none;">{{ item.title }}</a></h2>
+              {% endif %}
               {{ item.content }}
             </div>
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
-
-    <!-- 中间：文章 -->
-    <div class="column posts-column">
-      <h2 class="column-title">✍️ 文章</h2>
-      <ul class="item-list" id="posts-list">
-        {% assign posts = site.posts | sort: 'date' | reverse %}
-        {% for item in posts %}
-          <li class="post-item">
-            <div class="post-meta">
-              <a href="{{ item.url | relative_url }}">{{ item.date | date: "%b %d, %y" }}</a>
-              {% if item.category %}
-                • {{ site.category_names[item.category] | default: item.category }}
-              {% endif %}
-            </div>
-            <h2>
-              <a class="post-link" href="{{ item.url | relative_url }}">
-                {{ item.title | escape }}
-              </a>
-            </h2>
-            {% if site.show_excerpts %}
-              {{ item.excerpt }}
-            {% endif %}
           </li>
         {% endfor %}
       </ul>
@@ -246,7 +223,7 @@ title: 我的动态
       flex: 1;
     }
 
-    .thought-item, .post-item {
+    .moment-item, .post-item {
       margin-bottom: 25px;
       padding-bottom: 15px;
       border-bottom: 1px solid #eee;
@@ -283,7 +260,7 @@ title: 我的动态
       font-size: 1em; /* 移除 h2 的默认缩放 */
     }
 
-    .thought-content {
+    .moment-content {
       font-size: 1.05em;
       color: #333;
       margin-top: 8px;
@@ -407,24 +384,24 @@ title: 我的动态
         console.log('Detected content update, refreshing columns...');
 
         // 更新动态
-        const thoughtsList = document.getElementById('thoughts-list');
-        if (thoughtsList && data.thoughts) {
-          thoughtsList.innerHTML = data.thoughts.map(item => `
-            <li class="thought-item">
+        const momentsList = document.getElementById('moments-list');
+        if (momentsList && data.moments) {
+          momentsList.innerHTML = data.moments.map(item => `
+            <li class="moment-item">
               <div class="post-meta">
                 <a href="${item.url}">${item.date}</a>
               </div>
-              <div class="thought-content">${item.content}</div>
+              <div class="moment-content">${item.content}</div>
             </li>
           `).join('');
           
           // 如果有 MathJax，重新渲染
           if (window.MathJax && MathJax.Hub && MathJax.Hub.Queue) {
-            MathJax.Hub.Queue(["Typeset", MathJax.Hub, thoughtsList]);
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub, momentsList]);
           }
 
           // 渲染维基链接
-          renderWikiLinks(thoughtsList);
+          renderWikiLinks(momentsList);
         }
 
         // 更新文章

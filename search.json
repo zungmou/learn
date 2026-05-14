@@ -1,12 +1,12 @@
 ---
 layout: none
 ---
-{% assign all_search_items = site.posts | concat: site.thoughts %}
+{% assign all_search_items = site.posts %}
 [
   {% for item in all_search_items %}
     {
-      "title"    : "{% if item.title %}{{ item.title | escape }}{% else %}Thought: {{ item.date | date: '%Y-%m-%d %H:%M' }}{% endif %}",
-      "category" : "{% if item.collection == 'posts' %}Blog{% else %}Thought{% endif %}",
+      "title"    : "{% if item.title %}{{ item.title | escape }}{% else %}Moment: {{ item.date | date: '%Y-%m-%d %H:%M' }}{% endif %}",
+      "category" : "Moment",
       "url"      : "{{ item.url | relative_url }}",
       "date"     : "{{ item.date | date: '%Y-%m-%d' }}",
       "content"  : {{ item.content | strip_html | strip_newlines | jsonify }}
