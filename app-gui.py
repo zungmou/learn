@@ -175,7 +175,8 @@ class JekyllCMSGui:
             self.tree.column(col, width=max_w + 25)
 
     def new_post(self):
-        result = self.content_dialog("新建文章", is_post=True)
+        categories = self.api_call("/categories")
+        result = self.content_dialog("新建文章", is_post=True, categories=categories)
         if result:
             res = self.api_call("/posts", method="POST", data=result)
             if res:
@@ -209,13 +210,18 @@ class JekyllCMSGui:
         current_content = details.get("content", "")
         current_title = details.get("metadata", {}).get("title", "")
         current_source_url = details.get("metadata", {}).get("source_url", "")
+        current_category = details.get("metadata", {}).get("category", "")
+        
+        categories = self.api_call("/categories") if item_type == "post" else None
         
         result = self.content_dialog(
             f"编辑{ '文章' if item_type == 'post' else '想法' }", 
             is_post=(item_type == "post"),
             initial_title=current_title,
             initial_content=current_content,
-            initial_url=current_source_url
+            initial_url=current_source_url,
+            initial_category=current_category,
+            categories=categories
         )
         
         if result:
@@ -223,6 +229,7 @@ class JekyllCMSGui:
             if item_type == "post":
                 data["title"] = result["title"]
                 data["source_url"] = result["source_url"]
+                data["category"] = result["category"]
                 
             res = self.api_call(endpoint, method="PUT", data=data)
             if res:
@@ -248,12 +255,12 @@ class JekyllCMSGui:
                 messagebox.showinfo("成功", f"已删除 {filename}")
                 self.refresh_list()
 
-    def content_dialog(self, window_title, is_post=True, initial_title="", initial_content="", initial_url=""):
+    def content_dialog(self, window_title, is_post=True, initial_title="", initial_content="", initial_url="", initial_category="", categories=None):
         dialog = tk.Toplevel(self.root)
         dialog.title(window_title)
         
         # Center relative to root
-        width, height = 700, 550
+        width, height = 700, 600
         root_x = self.root.winfo_x()
         root_y = self.root.winfo_y()
         root_width = self.root.winfo_width()
@@ -271,6 +278,14 @@ class JekyllCMSGui:
         if not is_post:
             title_entry.config(state="disabled")
             title_var.set("(想法无标题)")
+
+        # Category field (for posts)
+        tk.Label(dialog, text="分类 (可选):").pack(anchor=tk.W, padx=10, pady=(5, 0))
+        category_var = tk.StringVar(value=initial_category or "")
+        category_combo = ttk.Combobox(dialog, textvariable=category_var, values=categories or [])
+        category_combo.pack(fill=tk.X, padx=10, pady=5)
+        if not is_post:
+            category_combo.config(state="disabled")
 
         # URL field
         tk.Label(dialog, text="来源 URL (可选):").pack(anchor=tk.W, padx=10, pady=(5, 0))
@@ -309,6 +324,7 @@ class JekyllCMSGui:
             result["title"] = title_var.get()
             result["content"] = content
             result["source_url"] = url_var.get().strip()
+            result["category"] = category_var.get().strip()
             dialog.destroy()
             
         def on_cancel(event=None):

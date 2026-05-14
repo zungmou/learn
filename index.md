@@ -45,6 +45,9 @@ title: 我的动态
           <li class="post-item">
             <div class="post-meta">
               <a href="{{ item.url | relative_url }}">{{ item.date | date: "%b %d, %y" }}</a>
+              {% if item.category %}
+                • {{ site.category_names[item.category] | default: item.category }}
+              {% endif %}
             </div>
             <h2>
               <a class="post-link" href="{{ item.url | relative_url }}">
@@ -419,6 +422,9 @@ title: 我的动态
           if (window.MathJax && MathJax.Hub && MathJax.Hub.Queue) {
             MathJax.Hub.Queue(["Typeset", MathJax.Hub, thoughtsList]);
           }
+
+          // 渲染维基链接
+          renderWikiLinks(thoughtsList);
         }
 
         // 更新文章
@@ -428,6 +434,7 @@ title: 我的动态
             <li class="post-item">
               <div class="post-meta">
                 <a href="${item.url}">${item.date}</a>
+                ${item.category ? ` • ${item.category_display}` : ''}
               </div>
               <h2>
                 <a class="post-link" href="${item.url}">${item.title}</a>
@@ -435,6 +442,9 @@ title: 我的动态
               ${data.show_excerpts ? item.excerpt : ''}
             </li>
           `).join('');
+
+          // 渲染维基链接
+          renderWikiLinks(postsList);
         }
       } catch (err) {
         console.error('Failed to fetch latest content:', err);

@@ -21,6 +21,8 @@ permalink: /api/latest.json
       {
         "date": "{{ item.date | date: '%b %d, %y' }}",
         "title": {{ item.title | jsonify }},
+        "category": {{ item.category | jsonify }},
+        "category_display": {{ site.category_names[item.category] | default: item.category | jsonify }},
         "url": "{{ item.url | relative_url }}",
         "excerpt": {{ item.excerpt | jsonify }},
         "id": {{ item.url | jsonify }}

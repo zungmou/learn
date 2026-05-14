@@ -13,6 +13,9 @@ layout: default
       {%- if page.author -%}
         • <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span class="p-author h-card" itemprop="name">{{ page.author }}</span></span>
       {%- endif -%}
+      {%- if page.category -%}
+        • {{ site.category_names[page.category] | default: page.category }}
+      {%- endif -%}
       {%- if page.source_url -%}
         • <a href="{{ page.source_url }}" target="_blank">查看原文来源</a>
       {%- endif -%}

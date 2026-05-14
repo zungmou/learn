@@ -23,3 +23,24 @@
   </div>
 
 </footer>
+
+<script>
+  /**
+   * 自动转换 {wiki:主题} 为 维基百科链接
+   */
+  function renderWikiLinks(element) {
+    if (!element) return;
+    const regex = /\{wiki:(.+?)\}/g;
+    element.innerHTML = element.innerHTML.replace(regex, (match, p1) => {
+      const url = `https://zh.wikipedia.org/wiki/${encodeURIComponent(p1.trim())}`;
+      return `<a href="${url}" target="_blank" class="wiki-link" title="在维基百科中查看 '${p1.trim()}'">${p1.trim()}</a>`;
+    });
+  }
+
+  // 初始加载时运行
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.post-content, .thought-content').forEach(el => {
+      renderWikiLinks(el);
+    });
+  });
+</script>

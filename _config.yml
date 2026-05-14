@@ -35,3 +35,9 @@ defaults:
 kramdown:
   math_engine: mathjax
   syntax_highlighter: rouge
+
+category_names:
+  cs: 计算机科学
+  tech: 技术
+  life: 生活
+  thought: 想法

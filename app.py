@@ -52,15 +52,52 @@ BASE_DIR = Path(".")
 POSTS_DIR = BASE_DIR / "_posts"
 THOUGHTS_DIR = BASE_DIR / "_thoughts"
 
+import yaml
+
 # 确保目录存在
 POSTS_DIR.mkdir(exist_ok=True)
 THOUGHTS_DIR.mkdir(exist_ok=True)
+
+def get_category_config():
+    config_path = BASE_DIR / "_config.yml"
+    if config_path.exists():
+        with open(config_path, "r", encoding="utf-8") as f:
+            config = yaml.safe_load(f)
+            return config.get("category_names", {})
+    return {}
+
+def map_category_to_slug(name: str) -> Optional[str]:
+    if not name:
+        return None
+    category_names = get_category_config()
+    # Reverse mapping: Chinese Name -> ASCII Slug
+    reverse_map = {v: k for k, v in category_names.items()}
+    return reverse_map.get(name, name)
+
+def map_slug_to_category(slug: str) -> Optional[str]:
+    if not slug:
+        return None
+    category_names = get_category_config()
+    return category_names.get(slug, slug)
+
+def sanitize_math_delimiters(content: str) -> str:
+    r"""将 \( \) 替换为 $，将 \[ \] 替换为 $$，处理单双反斜杠。"""
+    if not content:
+        return content
+    # 处理块级公式
+    content = content.replace(r"\\[", "$$").replace(r"\\]", "$$")
+    content = content.replace(r"\[", "$$").replace(r"\]", "$$")
+    # 处理行内公式
+    content = content.replace(r"\\(", "$").replace(r"\\)", "$")
+    content = content.replace(r"\(", "$").replace(r"\)", "$")
+    return content
 
 class ContentBase(BaseModel):
     content: str
 
 class PostCreate(ContentBase):
     title: str
+    category: Optional[str] = None
     source_url: Optional[str] = None
 
 class ThoughtCreate(ContentBase):
@@ -80,6 +117,18 @@ def get_filename_date():
 
 import subprocess
 
+@app.get("/categories")
+def get_categories():
+    category_names = get_category_config()
+    # 返回配置中定义的所有显示名称，以及文章中出现的其他分类
+    categories = set(category_names.values())
+    for f in POSTS_DIR.glob("*.md"):
+        post = frontmatter.load(f)
+        cat = post.get("category")
+        if cat:
+            categories.add(map_slug_to_category(cat))
+    return sorted(list(categories))
+
 @app.post("/posts", response_model=ContentResponse)
 def create_post(post: PostCreate):
     date_str = get_current_jekyll_date()
@@ -90,10 +139,12 @@ def create_post(post: PostCreate):
     filename = f"{file_date}-post-{timestamp}.md"
     file_path = POSTS_DIR / filename
     
+    sanitized_content = sanitize_math_delimiters(post.content)
     post_data = frontmatter.Post(
-        post.content,
+        sanitized_content,
         layout="post",
         title=post.title,
+        category=map_category_to_slug(post.category),
         date=date_str,
         source_url=post.source_url if post.source_url else None
     )
@@ -105,7 +156,7 @@ def create_post(post: PostCreate):
         "filename": filename,
         "type": "post",
         "metadata": post_data.metadata,
-        "content": post.content
+        "content": sanitized_content
     }
 
 @app.post("/thoughts", response_model=ContentResponse)
@@ -118,8 +169,9 @@ def create_thought(thought: ThoughtCreate):
     filename = f"{file_date}-thought-{timestamp}.md"
     file_path = THOUGHTS_DIR / filename
     
+    sanitized_content = sanitize_math_delimiters(thought.content)
     thought_data = frontmatter.Post(
-        thought.content,
+        sanitized_content,
         date=date_str
     )
     
@@ -130,7 +182,7 @@ def create_thought(thought: ThoughtCreate):
         "filename": filename,
         "type": "thought",
         "metadata": thought_data.metadata,
-        "content": thought.content
+        "content": sanitized_content
     }
 
 @app.get("/head")
@@ -199,6 +251,7 @@ def list_all_content():
 
 class PostUpdate(BaseModel):
     title: Optional[str] = None
+    category: Optional[str] = None
     source_url: Optional[str] = None
     content: str
 
@@ -211,7 +264,10 @@ def get_post(filename: str):
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="Post not found")
     post = frontmatter.load(file_path)
-    return {"metadata": post.metadata, "content": post.content}
+    metadata = post.metadata.copy()
+    if metadata.get("category"):
+        metadata["category"] = map_slug_to_category(metadata["category"])
+    return {"metadata": metadata, "content": post.content}
 
 @app.get("/thoughts/{filename}")
 def get_thought(filename: str):
@@ -228,9 +284,12 @@ def update_post(filename: str, data: PostUpdate):
         raise HTTPException(status_code=404, detail="Post not found")
     
     post = frontmatter.load(file_path)
-    post.content = data.content
+    post.content = sanitize_math_delimiters(data.content)
     if data.title:
         post["title"] = data.title
+    
+    # Update category
+    post["category"] = map_category_to_slug(data.category)
     
     # Always update source_url (stored as None if empty/None to remove/omit)
     post["source_url"] = data.source_url if data.source_url else None
@@ -247,7 +306,7 @@ def update_thought(filename: str, data: ThoughtUpdate):
         raise HTTPException(status_code=404, detail="Thought not found")
     
     thought = frontmatter.load(file_path)
-    thought.content = data.content
+    thought.content = sanitize_math_delimiters(data.content)
         
     with open(file_path, "wb") as f:
         frontmatter.dump(thought, f)
