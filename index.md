@@ -19,16 +19,16 @@ title: 我的动态
 
   <div class="main-container">
     <!-- 动态主时间线 -->
-    <div class="column moments-column" style="flex: 1; max-width: none;">
+    <div class="column posts-column" style="flex: 1; max-width: none;">
       <h2 class="column-title">💡 动态</h2>
-      <ul class="item-list" id="moments-list">
-        {% assign moments = site.posts | sort: 'date' | reverse %}
-        {% for item in moments %}
-          <li class="moment-item">
+      <ul class="item-list" id="posts-list">
+        {% assign posts = site.posts | sort: 'date' | reverse %}
+        {% for item in posts %}
+          <li class="post-item">
             <div class="post-meta">
               <a href="{{ item.url | relative_url }}">{{ item.date | date: "%b %d, %y" }}</a>
             </div>
-            <div class="moment-content">
+            <div class="post-content">
               {{ item.content }}
             </div>
           </li>
@@ -162,12 +162,6 @@ title: 我的动态
       flex-direction: column;
     }
 
-    .moments-column {
-      flex: 0 0 30%;
-      min-width: 300px;
-      max-width: 350px;
-    }
-
     .posts-column {
       flex: 1;
       background: #fff;
@@ -220,7 +214,7 @@ title: 我的动态
       flex: 1;
     }
 
-    .moment-item, .post-item {
+    .post-item {
       margin-bottom: 25px;
       padding-bottom: 15px;
       border-bottom: 1px solid #eee;
@@ -257,7 +251,7 @@ title: 我的动态
       font-size: 1em; /* 移除 h2 的默认缩放 */
     }
 
-    .moment-content {
+    .post-content {
       font-size: 1.05em;
       color: #333;
       margin-top: 8px;
@@ -385,42 +379,22 @@ title: 我的动态
 
         console.log('Detected content update, refreshing columns...');
 
-        // 更新动态
-        const momentsList = document.getElementById('moments-list');
-        if (momentsList && data.moments) {
-          momentsList.innerHTML = data.moments.map(item => `
-            <li class="moment-item">
+        // 更新内容列表
+        const postsList = document.getElementById('posts-list');
+        if (postsList && data.feed) {
+          postsList.innerHTML = data.feed.map(item => `
+            <li class="post-item">
               <div class="post-meta">
                 <a href="${item.url}">${item.date}</a>
               </div>
-              <div class="moment-content">${item.content}</div>
+              <div class="post-content">${item.content}</div>
             </li>
           `).join('');
           
           // 如果有 MathJax，重新渲染
           if (window.MathJax && MathJax.Hub && MathJax.Hub.Queue) {
-            MathJax.Hub.Queue(["Typeset", MathJax.Hub, momentsList]);
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub, postsList]);
           }
-
-          // 渲染维基链接
-          renderWikiLinks(momentsList);
-        }
-
-        // 更新文章
-        const postsList = document.getElementById('posts-list');
-        if (postsList && data.posts) {
-          postsList.innerHTML = data.posts.map(item => `
-            <li class="post-item">
-              <div class="post-meta">
-                <a href="${item.url}">${item.date}</a>
-                ${item.category ? ` • ${item.category_display}` : ''}
-              </div>
-              <h2>
-                <a class="post-link" href="${item.url}">${item.title}</a>
-              </h2>
-              ${data.show_excerpts ? item.excerpt : ''}
-            </li>
-          `).join('');
 
           // 渲染维基链接
           renderWikiLinks(postsList);
@@ -449,4 +423,3 @@ title: 我的动态
     src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
   </script>
 </div>
-

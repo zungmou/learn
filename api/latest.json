@@ -4,9 +4,9 @@ permalink: /api/latest.json
 ---
 {
   "show_excerpts": {{ site.show_excerpts | jsonify }},
-  "moments": [
-    {% assign moments = site.posts | sort: 'date' | reverse %}
-    {% for item in moments limit:20 %}
+  "feed": [
+    {% assign feed_items = site.posts | sort: 'date' | reverse %}
+    {% for item in feed_items limit:20 %}
       {
         "date": "{{ item.date | date: '%b %d, %y' }}",
         "url": "{{ item.url | relative_url }}",
