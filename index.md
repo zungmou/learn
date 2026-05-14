@@ -261,6 +261,28 @@ title: 我的动态
       font-size: 1.05em;
       color: #333;
       margin-top: 8px;
+      line-height: 1.6;
+      max-height: 12.8em; /* 8 lines * 1.6 line-height */
+      overflow: hidden;
+      position: relative;
+      transition: max-height 0.3s ease;
+    }
+
+    .moment-content.expanded {
+      max-height: none;
+    }
+
+    .expand-toggle {
+      color: #007bff;
+      cursor: pointer;
+      font-size: 0.9em;
+      margin-top: 5px;
+      display: none; /* Hidden by default, JS will show if needed */
+      user-select: none;
+    }
+
+    .expand-toggle:hover {
+      text-decoration: underline;
     }
 
     .post-meta {
@@ -357,6 +379,40 @@ title: 我的动态
       });
     });
 
+    // --- 展开/收起 逻辑 ---
+    function applyExpandLogic(container) {
+      const moments = (container || document).querySelectorAll('.moment-item');
+      moments.forEach(item => {
+        const content = item.querySelector('.moment-content');
+        if (!content) return;
+
+        // 清除旧的按钮（如果是刷新场景）
+        const oldToggle = item.querySelector('.expand-toggle');
+        if (oldToggle) oldToggle.remove();
+
+        // 创建展开/收起按钮
+        const toggle = document.createElement('div');
+        toggle.className = 'expand-toggle';
+        toggle.innerText = '展开';
+        item.appendChild(toggle);
+
+        // 使用 ResizeObserver 监听高度变化，处理异步加载的内容（如图片、MathJax）
+        const observer = new ResizeObserver(() => {
+          if (content.scrollHeight > content.clientHeight + 2) { // +2 容错
+            toggle.style.display = 'block';
+          } else if (!content.classList.contains('expanded')) {
+            toggle.style.display = 'none';
+          }
+        });
+        observer.observe(content);
+
+        toggle.onclick = () => {
+          const isExpanded = content.classList.toggle('expanded');
+          toggle.innerText = isExpanded ? '收起' : '展开';
+        };
+      });
+    }
+
     // --- 异步刷新逻辑 ---
     let lastContentHash = null;
 
@@ -399,6 +455,9 @@ title: 我的动态
 
           // 渲染维基链接
           renderWikiLinks(momentsList);
+
+          // 应用展开/收起逻辑
+          applyExpandLogic(momentsList);
         }
 
         // 更新文章
@@ -428,7 +487,10 @@ title: 我的动态
     // 每 20 秒检查一次更新
     setInterval(fetchLatest, 20000);
     // 延迟第一次检查，确保页面完全加载
-    setTimeout(fetchLatest, 5000);
+    setTimeout(() => {
+      fetchLatest();
+      applyExpandLogic();
+    }, 5000);
   </script>
 
   <script type="text/x-mathjax-config">
