@@ -28,7 +28,7 @@ defaults:
       layout: "post"
   - scope:
       path: ""
-      type: "thoughts"
+      type: "moments"
     values:
       layout: "thought"
 
@@ -40,4 +40,4 @@ category_names:
   cs: 计算机科学
   tech: 技术
   life: 生活
-  thought: 想法
+  thought: 动态

@@ -5,7 +5,7 @@ permalink: /api/latest.json
 {
   "show_excerpts": {{ site.show_excerpts | jsonify }},
   "thoughts": [
-    {% assign thoughts = site.thoughts | sort: 'date' | reverse %}
+    {% assign thoughts = site.moments | sort: 'date' | reverse %}
     {% for item in thoughts limit:20 %}
       {
         "date": "{{ item.date | date: '%b %d, %y' }}",

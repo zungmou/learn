@@ -8,8 +8,8 @@ title: 内容统计
   
   <div class="stats-box" style="margin-top: 30px; font-size: 1.2em; line-height: 2;">
     <p>📝 <strong>文章总数：</strong> {{ site.posts | size }} 篇</p>
-    <p>💡 <strong>想法总数：</strong> {{ site.thoughts | size }} 条</p>
-    <p>🚀 <strong>总动态数：</strong> {{ site.posts.size | plus: site.thoughts.size }}</p>
+    <p>💡 <strong>动态总数：</strong> {{ site.moments | size }} 条</p>
+    <p>🚀 <strong>总动态数：</strong> {{ site.posts.size | plus: site.moments.size }}</p>
   </div>
 
   <hr style="margin: 40px 0;">

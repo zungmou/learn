@@ -18,11 +18,11 @@ title: 我的动态
   </header>
 
   <div class="main-container">
-    <!-- 左侧：想法 -->
+    <!-- 左侧：动态 -->
     <div class="column thoughts-column">
-      <h2 class="column-title">💡 想法</h2>
+      <h2 class="column-title">💡 动态</h2>
       <ul class="item-list" id="thoughts-list">
-        {% assign thoughts = site.thoughts | sort: 'date' | reverse %}
+        {% assign thoughts = site.moments | sort: 'date' | reverse %}
         {% for item in thoughts %}
           <li class="thought-item">
             <div class="post-meta">
@@ -188,7 +188,7 @@ title: 我的动态
       flex-direction: column;
     }
 
-    .thoughts-column {
+    .moments-column {
       flex: 0 0 30%;
       min-width: 300px;
       max-width: 350px;
@@ -406,7 +406,7 @@ title: 我的动态
 
         console.log('Detected content update, refreshing columns...');
 
-        // 更新想法
+        // 更新动态
         const thoughtsList = document.getElementById('thoughts-list');
         if (thoughtsList && data.thoughts) {
           thoughtsList.innerHTML = data.thoughts.map(item => `
@@ -470,3 +470,4 @@ title: 我的动态
     src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
   </script>
 </div>
+
