@@ -85,12 +85,12 @@
     color: #0056b3;
   }
 
-  &::after {
+  &::before {
     content: "";
     display: inline-block;
     width: 14px;
     height: 14px;
-    margin-left: 4px;
+    margin-right: 4px;
     background-image: url('https://upload.wikimedia.org/wikipedia/commons/d/de/Wikipedia-favicon.png');
     background-size: contain;
     background-repeat: no-repeat;
@@ -99,7 +99,7 @@
     opacity: 0.8;
   }
 
-  &:hover::after {
+  &:hover::before {
     opacity: 1;
   }
 }
