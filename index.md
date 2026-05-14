@@ -29,9 +29,6 @@ title: 我的动态
               <a href="{{ item.url | relative_url }}">{{ item.date | date: "%b %d, %y" }}</a>
             </div>
             <div class="moment-content">
-              {% if item.title %}
-                <h2 style="margin-top: 0;"><a href="{{ item.url | relative_url }}" style="color: inherit; text-decoration: none;">{{ item.title }}</a></h2>
-              {% endif %}
               {{ item.content }}
             </div>
           </li>
