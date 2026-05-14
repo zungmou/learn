@@ -19,7 +19,7 @@ title: 我的动态
 
   <div class="main-container">
     <!-- 左侧：动态 -->
-    <div class="column thoughts-column">
+    <div class="column moments-column">
       <h2 class="column-title">💡 动态</h2>
       <ul class="item-list" id="thoughts-list">
         {% assign thoughts = site.moments | sort: 'date' | reverse %}

@@ -16,9 +16,9 @@ giscus:
   lang: zh-CN
 
 collections:
-  thoughts:
+  moments:
     output: true
-    permalink: /thoughts/:path/
+    permalink: /moments/:path/
 
 defaults:
   - scope:
