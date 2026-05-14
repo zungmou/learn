@@ -262,14 +262,16 @@ title: 我的动态
       color: #333;
       margin-top: 8px;
       line-height: 1.6;
-      max-height: 12.8em; /* 8 lines * 1.6 line-height */
+      display: -webkit-box;
+      -webkit-line-clamp: 8;
+      -webkit-box-orient: vertical;
       overflow: hidden;
       position: relative;
-      transition: max-height 0.3s ease;
     }
 
     .moment-content.expanded {
-      max-height: none;
+      display: block;
+      -webkit-line-clamp: unset;
     }
 
     .expand-toggle {
