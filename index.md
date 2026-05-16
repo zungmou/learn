@@ -1,412 +1,267 @@
 ---
 layout: default
-title: 我的动态
+title: 我的随笔 & 文章
 ---
 
 <div class="home">
 
   <!-- 自定义头部：站点标题在左，搜索在右 -->
-  <header class="custom-site-header">
-    <div class="header-left">
-      <a class="site-title" rel="author" href="{{ '/' | relative_url }}">{{ site.title | escape }}</a>
-    </div>
-    <div class="header-right">
-      <div class="page-search">
-        {% include search.html %}
-      </div>
-    </div>
-  </header>
+  {% include custom_header.html %}
 
-  <div class="main-container">
-    <!-- 动态主时间线 -->
-    <div class="column posts-column" style="flex: 1; max-width: none;">
-      <h2 class="column-title">💡 动态</h2>
-      <ul class="item-list" id="posts-list">
-        {% assign posts = site.posts | sort: 'date' | reverse %}
-        {% for item in posts %}
-          <li class="post-item">
-            <div class="post-meta">
+  <!-- 动态主时间线 -->
+  <div class="posts-column">
+    <!-- 分类筛选状态 -->
+    <div id="filter-status" style="margin-bottom: 20px; display: none; align-items: center; gap: 12px; padding: 10px 15px; background: #eff6ff; border-radius: 8px; border: 1px solid rgba(37, 99, 235, 0.1);">
+      <span style="font-size: 0.9em; color: #1e40af;">正在查看分类: <strong id="current-category-name" style="color: #2563eb;"></strong></span>
+      <a href="{{ '/' | relative_url }}" class="clear-filter" style="font-size: 0.85em; color: #2563eb; text-decoration: none; font-weight: 500;">✕ 清除筛选</a>
+    </div>
+
+    <ul class="item-list" id="posts-list">
+      {% assign all_items = site.posts | concat: site.notes | sort: 'date' | reverse %}
+      {% for item in all_items %}
+        <li class="item" style="display: none;" data-category="{{ item.categories | join: ' ' }}">
+          <div class="post-meta">
+            <div class="meta-date">
               <a href="{{ item.url | relative_url }}">{{ item.date | date: "%b %d, %y" }}</a>
             </div>
-            <div class="post-content">
+            {% if item.categories.size > 0 %}
+              <div class="item-categories">
+                {% for cat in item.categories %}
+                  <a href="?category={{ cat }}" class="category-tag">{{ site.category_names[cat] | default: cat }}</a>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          {% if item.title and item.layout != 'note' %}
+            <h2 class="post-link">
+              <a href="{{ item.url | relative_url }}">{{ item.title }}</a>
+            </h2>
+          {% endif %}
+          <div class="item-summary">
+            {% if item.title and item.layout != 'note' %}
+              {{ item.summary | markdownify }}
+            {% else %}
               {{ item.content }}
-            </div>
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
+            {% endif %}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
 
-    <!-- 右侧：链接 -->
-    <div class="column links-column">
-      <h2 class="column-title">🔗 链接</h2>
-      <ul class="item-list">
-        <li class="post-item">
-          <div class="post-meta">Site</div>
-          <div class="link-wrapper">
-            <a class="custom-link" href="{{ '/stats.html' | relative_url }}">📊 内容统计</a>
-          </div>
-          <p class="link-desc">查看本站所有内容的发布统计信息。</p>
-        </li>
-        <li class="post-item">
-          <div class="post-meta">GitHub</div>
-          <div class="link-wrapper">
-            <a class="custom-link" href="https://github.com/zungmou/learn" target="_blank">💻 项目源码</a>
-          </div>
-          <p class="link-desc">本博客基于 Jekyll 构建，源代码托管在 GitHub。</p>
-        </li>
-        <li class="post-item">
-          <div class="post-meta">Tool</div>
-          <div class="link-wrapper">
-            <a class="custom-link" href="{{ '/search.json' | relative_url }}">🔍 搜索数据源</a>
-          </div>
-          <p class="link-desc">查看本站搜索功能的 JSON 数据索引。</p>
-        </li>
-      </ul>
+    <!-- 分页控制 -->
+    <div id="pagination" style="text-align: center; margin: 20px 0; display: flex; justify-content: center; align-items: center; gap: 15px;">
+      <button id="prev-page" class="pager-btn" disabled>上一页</button>
+      <span id="page-info" style="font-size: 0.9em; color: #666;">第 1 页</span>
+      <button id="next-page" class="pager-btn">下一页</button>
     </div>
   </div>
 
-  <style>
-    /* 隐藏默认的站点头部和导航 */
-    .site-header {
-      display: none !important;
-    }
-
-    .page-content {
-      padding: 0 !important; /* 移除 page-content 的默认间距 */
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    /* 强行覆盖主题的限制 */
-    .wrapper {
-      max-width: 100% !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    html, body {
-      overflow: hidden;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
-
-    .site-footer {
-      display: none;
-    }
-
-    .home {
-      text-align: left;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    /* 自定义头部布局 */
-    .custom-site-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 20px;
-      border-bottom: 1px solid #eee;
-      background: #fff;
-    }
-
-    .site-title {
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: 1.8em;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      color: #222;
-      text-decoration: none;
-      transition: color 0.3s ease;
-    }
-
-    .site-title:hover {
-      color: #007bff;
-    }
-
-    .header-right {
-      flex: 0 0 400px;
-    }
-
-    /* 覆盖 search.html 中的外边距 */
-    .page-search .search-container {
-      margin-bottom: 0 !important;
-    }
-
-    .main-container {
-      display: flex;
-      gap: 0;
-      margin-top: 0;
-      justify-content: flex-start;
-      flex: 1;
-      width: 100%;
-      overflow: hidden;
-    }
-
-    .column {
-      height: 100%;
-      overflow-y: auto;
-      border-right: 1px solid #eee;
-      background: #fafafa;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .posts-column {
-      flex: 1;
-      background: #fff;
-    }
-
-    .links-column {
-      flex: 0 0 25%;
-      min-width: 250px;
-      max-width: 300px;
-      border-right: none;
-    }
-
-    .column-title {
-      position: sticky;
-      top: 0;
-      background: inherit;
-      padding: 15px 20px;
-      margin: 0;
-      border-bottom: 2px solid #eee;
-      z-index: 10;
-      font-size: 1.1em;
-      flex-shrink: 0;
-      cursor: pointer; /* 提示可点击 */
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      user-select: none; /* 防止频繁点击选中文字 */
-    }
-
-    /* 添加切换图标 */
-    .column-title::after {
-      content: '▾';
-      font-size: 0.8em;
-      transition: transform 0.3s ease;
-      color: #aaa;
-    }
-
-    .column.collapsed .column-title::after {
-      transform: rotate(-90deg);
-    }
-
-    .column.collapsed .item-list {
-      display: none;
-    }
-
-    .item-list {
-      list-style: none;
-      margin: 0;
-      padding: 20px;
-      flex: 1;
-    }
-
-    .post-item {
-      margin-bottom: 25px;
-      padding-bottom: 15px;
-      border-bottom: 1px solid #eee;
-    }
-
-    /* 链接列字体微调 */
-    .custom-link {
-      font-size: 0.95em;
-      font-weight: 600;
-      color: #007bff;
-      text-decoration: none;
-    }
-    .custom-link:hover {
-      text-decoration: underline;
-    }
-    .link-wrapper {
-      margin: 5px 0;
-    }
-    .link-desc {
-      font-size: 0.85em;
-      color: #666;
-      margin: 0;
-    }
-
-    /* 文章列链接字体 - 统一为常规大小 */
-    .posts-column .post-link {
-      font-size: 1.05em;
-      font-weight: 600;
-    }
-
-    .post-item h2 {
-      margin: 5px 0;
-      line-height: 1.4;
-      font-size: 1em; /* 移除 h2 的默认缩放 */
-    }
-
-    .post-content {
-      font-size: 1.05em;
-      color: #333;
-      margin-top: 8px;
-      line-height: 1.6;
-      display: -webkit-box;
-      -webkit-line-clamp: 8;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .post-meta {
-      font-size: 0.85em;
-      color: #828282;
-    }
-
-    .post-meta a {
-      color: inherit;
-      text-decoration: none;
-      position: relative;
-      z-index: 5;
-    }
-
-    .post-meta a:hover {
-      text-decoration: underline;
-    }
-
-    .column::-webkit-scrollbar {
-      width: 4px;
-    }
-    .column::-webkit-scrollbar-thumb {
-      background-color: #eee;
-      border-radius: 10px;
-    }
-    .column:hover::-webkit-scrollbar-thumb {
-      background-color: #ccc;
-    }
-
-    /* 手机端恢复常规布局 - 仅在竖屏且宽度较小时触发，或者宽度极小时触发 */
-    @media (max-width: 1000px) and (orientation: portrait), (max-width: 700px) {
-      .site-header {
-        display: none !important; /* 手机端也隐藏默认头 */
-      }
-
-      .custom-site-header {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 10px 15px;
-      }
-
-      .header-right {
-        flex: none;
-        width: 100%;
-        margin-top: 10px;
-      }
-
-      html, body {
-        overflow: auto !important; /* 恢复全局滚动 */
-        height: auto;
-      }
-
-      .wrapper {
-        height: auto !important;
-        overflow: visible;
-      }
-
-      .page-content {
-        overflow: visible !important;
-      }
-
-      .home {
-        height: auto !important;
-        overflow: visible !important;
-      }
-
-      .main-container {
-        flex-direction: column;
-        height: auto !important;
-        overflow: visible !important;
-      }
-
-      .column {
-        flex: none;
-        width: 100%;
-        height: auto !important;
-        overflow-y: visible !important;
-        border-right: none;
-        border-bottom: 2px solid #eee;
-      }
-
-      .column-title {
-        position: static; /* 手机端标题不粘性，减少滚动干扰 */
-      }
-    }
-  </style>
+  {% include footer.html %}
 
   <script>
-    // 列折叠切换功能
-    document.querySelectorAll('.column-title').forEach(title => {
-      title.addEventListener('click', () => {
-        const column = title.parentElement;
-        column.classList.toggle('collapsed');
+    // --- 分页与异步刷新逻辑 ---
+    let lastContentHash = null;
+    const pageSize = 10;
+    
+    // 分类名称映射
+    const categoryNames = {
+      {% for cat in site.category_names %}
+        "{{ cat[0] }}": "{{ cat[1] }}",
+      {% endfor %}
+    };
+
+    function getCategoryColor(name) {
+      if (!name) return "#2563eb";
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        hash = hash & hash; // Convert to 32bit integer
+      }
+      
+      // 使用 HSL 空间生成颜色，确保色相均匀分布
+      // 饱和度设为 70%，亮度设为 45%，保证科技感和白色文字的可读性
+      const hue = Math.abs(hash) % 360;
+      return `hsl(${hue}, 70%, 45%)`;
+    }
+
+    function applyTagColors(container = document) {
+      container.querySelectorAll('.category-tag').forEach(tag => {
+        // 使用 textContent 而不是 innerText，因为 innerText 获取不到 display: none 元素的值
+        const cat = tag.textContent.trim();
+        tag.style.backgroundColor = getCategoryColor(cat);
       });
+    }
+    
+    // 从 URL 获取当前页码
+    function getPageFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return parseInt(params.get('page')) || 1;
+    }
+
+    // 从 URL 获取当前分类
+    function getCategoryFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('category');
+    }
+
+    let currentPage = getPageFromUrl();
+
+    // 初始化：控制显示并更新 UI
+    window.updatePagination = function(syncUrl = true) {
+      const list = document.getElementById('posts-list');
+      if (!list) return;
+
+      applyTagColors(list);
+      
+      const currentCategory = getCategoryFromUrl();
+      const filterStatus = document.getElementById('filter-status');
+      const categoryNameDisplay = document.getElementById('current-category-name');
+      
+      // 更新筛选状态 UI
+      if (currentCategory) {
+        if (filterStatus) filterStatus.style.display = 'flex';
+        const displayName = categoryNames[currentCategory] || currentCategory;
+        if (categoryNameDisplay) {
+            categoryNameDisplay.innerText = displayName;
+            filterStatus.style.backgroundColor = getCategoryColor(displayName) + '15'; // 15 is hex for low opacity
+            categoryNameDisplay.style.color = getCategoryColor(displayName);
+        }
+      } else {
+        if (filterStatus) filterStatus.style.display = 'none';
+      }
+
+      const allItems = list.querySelectorAll('.item');
+      let filteredItems = [];
+      
+      // 执行筛选
+      allItems.forEach(item => {
+        const itemCategories = (item.getAttribute('data-category') || '').split(' ');
+        if (!currentCategory || itemCategories.includes(currentCategory)) {
+          filteredItems.push(item);
+          item.style.display = 'none'; // 先隐藏，后面按页码显示
+        } else {
+          item.style.display = 'none';
+        }
+      });
+
+      const totalPages = Math.ceil(filteredItems.length / pageSize) || 1;
+      
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      // 分页显示
+      filteredItems.forEach((item, index) => {
+        const start = (currentPage - 1) * pageSize;
+        const end = start + pageSize;
+        if (index >= start && index < end) {
+          item.style.display = 'block';
+        }
+      });
+
+      const pageInfo = document.getElementById('page-info');
+      const prevBtn = document.getElementById('prev-page');
+      const nextBtn = document.getElementById('next-page');
+
+      if (pageInfo) pageInfo.innerText = `第 ${currentPage} / ${totalPages} 页`;
+      if (prevBtn) prevBtn.disabled = (currentPage === 1);
+      if (nextBtn) nextBtn.disabled = (currentPage === totalPages);
+
+      // 同步到地址栏
+      if (syncUrl) {
+        const url = new URL(window.location);
+        url.searchParams.set('page', currentPage);
+        if (currentCategory) {
+          url.searchParams.set('category', currentCategory);
+        } else {
+          url.searchParams.delete('category');
+        }
+        
+        if (window.location.search !== url.search) {
+          history.pushState({ page: currentPage, category: currentCategory }, '', url);
+        }
+      }
+    }
+
+    // 使用事件委托处理分页点击
+    document.addEventListener('click', (e) => {
+      if (e.target.id === 'prev-page') {
+        currentPage--;
+        window.updatePagination();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (e.target.id === 'next-page') {
+        currentPage++;
+        window.updatePagination();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     });
 
-    // --- 异步刷新逻辑 ---
-    let lastContentHash = null;
+    // 监听返回/前进按钮（处理仅页码或分类变化的情况）
+    window.addEventListener('popstate', (e) => {
+      currentPage = getPageFromUrl();
+      window.updatePagination(false);
+    });
 
-    async function fetchLatest() {
+    window.fetchLatest = async function() {
       try {
-        // 添加时间戳以绕过浏览器缓存
         const res = await fetch('{{ "/api/latest.json" | relative_url }}?_t=' + Date.now());
         if (!res.ok) return;
         const data = await res.json();
         
-        // 使用 JSON 字符串作为简单的哈希比较
         const currentHash = JSON.stringify(data);
         if (currentHash === lastContentHash) return;
         
-        // 如果是首次加载且数据一致，则不重新渲染
         if (lastContentHash === null) {
           lastContentHash = currentHash;
+          window.updatePagination(false); 
           return;
         }
         lastContentHash = currentHash;
 
-        console.log('Detected content update, refreshing columns...');
+        console.log('Detected content update, refreshing list...');
 
-        // 更新内容列表
         const postsList = document.getElementById('posts-list');
         if (postsList && data.feed) {
           postsList.innerHTML = data.feed.map(item => `
-            <li class="post-item">
+            <li class="item" style="display: none;" data-category="${(item.categories || []).join(' ')}">
               <div class="post-meta">
-                <a href="${item.url}">${item.date}</a>
+                <div class="meta-date">
+                  <a href="${item.url}">${item.date}</a>
+                </div>
+                ${(item.categories || []).length > 0 ? `
+                  <div class="item-categories">
+                    ${item.categories.map((cat, idx) => `
+                      <a href="?category=${cat}" class="category-tag">${item.categories_display[idx] || cat}</a>
+                    `).join('')}
+                  </div>
+                ` : ''}
               </div>
-              <div class="post-content">${item.content}</div>
+              ${item.title ? `
+                <h2 class="post-link">
+                  <a href="${item.url}">${item.title}</a>
+                </h2>
+              ` : ''}
+              <div class="item-summary">${item.content || ''}</div>
             </li>
           `).join('');
           
-          // 如果有 MathJax，重新渲染
+          window.updatePagination(false);
+
           if (window.MathJax && MathJax.Hub && MathJax.Hub.Queue) {
             MathJax.Hub.Queue(["Typeset", MathJax.Hub, postsList]);
           }
 
-          // 渲染维基链接
-          renderWikiLinks(postsList);
+          if (window.renderWikiLinks) {
+            renderWikiLinks(postsList);
+          }
         }
       } catch (err) {
         console.error('Failed to fetch latest content:', err);
       }
     }
 
-    // 每 20 秒检查一次更新
+    // 初始执行一次
+    window.updatePagination(false);
     setInterval(fetchLatest, 20000);
-    // 延迟第一次检查，确保页面完全加载
     setTimeout(fetchLatest, 5000);
   </script>
 

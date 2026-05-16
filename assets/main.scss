@@ -3,9 +3,342 @@
 
 @import "minima";
 
+/* Global Styles */
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #f4f4f2;
+  color: #1f2937;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", "Noto Sans CJK SC", "WenQuanYi Micro Hei", "MiSans L3", "Segoe UI", sans-serif;
+}
+
+a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.site-header, .site-footer {
+  display: none !important;
+}
+
+.home {
+  width: 100%;
+  margin: 0;
+  background: #f4f4f2;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-content {
+  padding: 0 !important;
+  flex: 1;
+}
+
+.wrapper {
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Custom Header */
+.custom-site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 40px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
+  width: 100%;
+  box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.site-title {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 1.6em;
+  font-weight: 700;
+  color: #111827;
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+
+.header-right {
+  flex: 0 0 300px;
+}
+
+/* Layout Containers */
+.main-container {
+  width: 100%;
+}
+
+.posts-column {
+  margin: 15px auto 30px;
+  width: 100%;
+  max-width: 694px;
+}
+
+.item-list {
+  list-style: none;
+  padding: 0;
+  width: 100%;
+  flex: 1;
+}
+
+.item {
+  margin-bottom: 12px;
+  padding: 0;
+  background: #fcfaf2;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+  }
+}
+
+.item-categories {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start; // 确保单个标签悬停增长时，其他标签不会跟着拉伸
+}
+
+.category-tag {
+  display: inline-block;
+  padding: 5px 12px 6px;
+  background-color: #2563eb; // Fallback
+  color: #ffffff !important;
+  font-size: 0.75em;
+  font-weight: 600;
+  border-radius: 0 0 6px 6px;
+  transition: all 0.2s ease;
+  line-height: 1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    padding-bottom: 9px;
+    opacity: 0.9;
+    text-decoration: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.item:last-child {
+  margin-bottom: 0;
+}
+
+/* Item Typography (List & Inner) */
+.post-header, .post-content {
+  padding-left: 30px;
+  padding-right: 30px;
+}
+
+.post-header {
+  padding-top: 30px;
+  margin-bottom: 0;
+
+  .post-meta {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+.comments {
+  padding-left: 30px;
+  padding-right: 30px;
+  padding-bottom: 30px;
+}
+
+.post-title {
+  font-size: 1.85rem;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: #111827;
+  
+  @include media-query($on-laptop) {
+    font-size: 1.6rem;
+  }
+}
+
+.item-list .post-link {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin: 0 0 0.8em 0;
+  padding: 0 24px;
+}
+
+.item-list .post-link a {
+  color: #111827;
+  text-decoration: none;
+}
+
+.item-list .post-link a:hover {
+  color: #2563eb;
+}
+
+.item h2 {
+  margin: 0;
+  line-height: 1.4;
+  font-size: 1em;
+}
+
+.post-content {
+  font-size: 1.05em;
+  color: #374151;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  line-height: 1.7;
+}
+
+.item-list .item-summary {
+  padding: 20px 24px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-top: 1px solid rgba(0, 0, 0, 0.03);
+  font-size: 1em;
+  color: #4b5563;
+  line-height: 1.6;
+  margin-top: auto;
+
+  p {
+    margin: 0;
+  }
+  
+  p + p {
+    margin-top: 0.8em;
+  }
+}
+
+.post-meta {
+  font-size: 0.85em;
+  color: #6b7280;
+  padding: 20px 24px;
+}
+
+.item .post-meta {
+  padding: 0 24px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.meta-date {
+  margin-top: 20px;
+}
+
+.post-meta a {
+  color: inherit;
+  text-decoration: none;
+  position: relative;
+  z-index: 5;
+}
+
+.post-meta a:hover {
+  color: #2563eb;
+}
+
+/* Pagination Styles */
+.pager-btn {
+  padding: 8px 20px;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #2563eb;
+  cursor: pointer;
+  font-size: 0.9em;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  
+  &:hover:not(:disabled) {
+    background-color: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  }
+  
+  &:disabled {
+    background-color: #f9fafb;
+    color: #9ca3af;
+    cursor: not-allowed;
+    border-color: #f3f4f6;
+  }
+}
+
+/* Scrollbar Styles */
+.column::-webkit-scrollbar {
+  width: 4px;
+}
+.column::-webkit-scrollbar-thumb {
+  background-color: #eee;
+  border-radius: 10px;
+}
+.column:hover::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+}
+
+/* Mobile Responsive */
+@media (max-width: 1000px) and (orientation: portrait), (max-width: 700px) {
+  .custom-site-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px 15px;
+  }
+
+  .header-right {
+    flex: none;
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  html, body {
+    overflow: auto !important;
+    height: auto;
+  }
+
+  .wrapper {
+    height: auto !important;
+    overflow: visible;
+  }
+
+  .page-content {
+    overflow: visible !important;
+  }
+
+  .main-container {
+    flex-direction: column;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .column {
+    flex: none;
+    width: 100%;
+    height: auto !important;
+    overflow-y: visible !important;
+    border-right: none;
+    border-bottom: 2px solid #eee;
+  }
+}
+
 // Reduce heading font sizes for post pages
 .post-title {
   font-size: 1.85rem;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
   margin-bottom: 0.5rem;
   
   @include media-query($on-laptop) {
@@ -13,15 +346,18 @@
   }
 }
 
-.post-content, .moment-content {
+.post-content, .note-content {
   h1 {
     font-size: 1.7rem;
+    line-height: 1.4;
     @include media-query($on-laptop) {
       font-size: 1.5rem;
     }
   }
   h2 {
     font-size: 1.45rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
     @include media-query($on-laptop) {
       font-size: 1.3rem;
     }
@@ -40,6 +376,13 @@
   }
   h6 {
     font-size: 0.9rem;
+  }
+
+  hr {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    border: 0;
+    border-top: 1px solid #eee;
   }
 
   // Table styles

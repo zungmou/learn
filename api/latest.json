@@ -5,12 +5,20 @@ permalink: /api/latest.json
 {
   "show_excerpts": {{ site.show_excerpts | jsonify }},
   "feed": [
-    {% assign feed_items = site.posts | sort: 'date' | reverse %}
+    {% assign feed_items = site.posts | concat: site.notes | sort: 'date' | reverse %}
     {% for item in feed_items limit:20 %}
       {
         "date": "{{ item.date | date: '%b %d, %y' }}",
         "url": "{{ item.url | relative_url }}",
-        "content": {{ item.content | jsonify }},
+        "categories": {{ item.categories | jsonify }},
+        "categories_display": [
+          {% for cat in item.categories %}
+            {{ site.category_names[cat] | default: cat | jsonify }}{% unless forloop.last %},{% endunless %}
+          {% endfor %}
+        ],
+        "content": {% if item.title and item.layout != 'note' %}{{ item.summary | markdownify | jsonify }}{% else %}{{ item.content | jsonify }}{% endif %},
+        "summary": {{ item.summary | markdownify | jsonify }},
+        "title": {% if item.layout != 'note' %}{{ item.title | jsonify }}{% else %}null{% endif %},
         "id": {{ item.url | jsonify }}
       }{% unless forloop.last %},{% endunless %}
     {% endfor %}

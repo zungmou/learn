@@ -1,7 +1,7 @@
 ---
 layout: none
 ---
-{% assign all_search_items = site.posts %}
+{% assign all_search_items = site.posts | concat: site.notes %}
 [
   {% for item in all_search_items %}
     {

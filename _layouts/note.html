@@ -1,21 +1,45 @@
 ---
 layout: default
 ---
-<article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+<div class="home">
+  {% include custom_header.html %}
 
-  <header class="post-header">
-    <h1 class="post-title p-name" itemprop="name headline">动态记录</h1>
-    <p class="post-meta">
-      <time class="dt-published" datetime="{{ page.date | date_to_xmlschema }}" itemprop="datePublished">
-        {%- assign date_format = site.minima.date_format | default: "%b %d, %Y" -%}
-        {{ page.date | date: date_format }}
-      </time>
-    </p>
-  </header>
+  <div class="posts-column">
+    <article class="post h-entry item" itemscope itemtype="http://schema.org/BlogPosting" style="border-bottom: none;">
+      <header class="post-header">
+        {% if page.title %}
+          <h1 class="post-title p-name" itemprop="name headline">{{ page.title }}</h1>
+        {% endif %}
+        <p class="post-meta">
+          <time class="dt-published" datetime="{{ page.date | date_to_xmlschema }}" itemprop="datePublished">
+            {%- assign date_format = site.minima.date_format | default: "%b %d, %Y" -%}
+            {{ page.date | date: date_format }}
+          </time>
+        </p>
+        {%- if page.summary -%}
+          <div class="post-summary" style="margin-top: 15px; font-style: italic; color: #555; border-left: 4px solid #eee; padding-left: 15px; line-height: 1.6;">
+            {{ page.summary | markdownify }}
+          </div>
+        {%- endif -%}
+      </header>
 
-  <div class="post-content e-content" itemprop="articleBody" style="font-size: 1.2em; line-height: 1.6; color: #333;">
-    {{ content }}
+      <div class="post-content note-content e-content" itemprop="articleBody" style="font-size: 1.2em; line-height: 1.6; color: #333;">
+        {{ content }}
+      </div>
+
+      <div style="margin: 40px 0; border-top: 1px solid #eee; padding-top: 20px;">
+        <div style="color: #999; font-size: 0.9em;">#{{ site.category_names[page.category] | default: "随笔" }}</div>
+      </div>
+
+      {%- if site.giscus.repo -%}
+        {%- include giscus_comments.html -%}
+      {%- endif -%}
+
+      <a class="u-url" href="{{ page.url | relative_url }}" hidden></a>
+    </article>
   </div>
+
+  {% include footer.html %}
 
   {% if page.use_math != false %}
   <script type="text/x-mathjax-config">
@@ -31,14 +55,4 @@ layout: default
     src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
   </script>
   {% endif %}
-
-  <div style="margin: 40px 0; border-top: 1px solid #eee; padding-top: 20px;">
-    <div style="color: #999; font-size: 0.9em;">#动态</div>
-  </div>
-
-  {%- if site.giscus.repo -%}
-    {%- include giscus_comments.html -%}
-  {%- endif -%}
-
-  <a class="u-url" href="{{ page.url | relative_url }}" hidden></a>
-</article>
+</div>

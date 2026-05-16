@@ -20,7 +20,17 @@ defaults:
       path: ""
       type: "posts"
     values:
-      layout: "moment"
+      layout: "post"
+  - scope:
+      path: ""
+      type: "notes"
+    values:
+      layout: "note"
+
+collections:
+  notes:
+    output: true
+    permalink: /notes/:name
 
 kramdown:
   math_engine: mathjax
@@ -30,4 +40,5 @@ category_names:
   cs: 计算机科学
   tech: 技术
   life: 生活
-  moment: 动态
+  essay: 随笔
+  article: 文章

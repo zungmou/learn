@@ -14,15 +14,15 @@ def git_sync_periodic():
     try:
         # 1. 检查指定目录是否有改动
         status = subprocess.run(
-            ["git", "status", "--porcelain", str(POSTS_DIR)],
+            ["git", "status", "--porcelain", str(POSTS_DIR), str(NOTES_DIR)],
             capture_output=True, text=True
         ).stdout.strip()
         
         if not status:
             return # 没有改动，跳过
             
-        # 2. 仅添加指定目录的更改
-        subprocess.run(["git", "add", str(POSTS_DIR)], check=True)
+        # 2. 添加目录的更改
+        subprocess.run(["git", "add", str(POSTS_DIR), str(NOTES_DIR)], check=True)
         
         # 3. 提交并推送
         subprocess.run(["git", "commit", "-m", "Auto-sync content updates"], check=True)
@@ -51,11 +51,13 @@ app = FastAPI(title="Jekyll CMS API", lifespan=lifespan)
 # 基础路径
 BASE_DIR = Path(".")
 POSTS_DIR = BASE_DIR / "_posts"
+NOTES_DIR = BASE_DIR / "_notes"
 
 import yaml
 
 # 确保目录存在
 POSTS_DIR.mkdir(exist_ok=True)
+NOTES_DIR.mkdir(exist_ok=True)
 
 def get_category_config():
     config_path = BASE_DIR / "_config.yml"
@@ -94,8 +96,24 @@ def sanitize_math_delimiters(content: str) -> str:
 class ContentBase(BaseModel):
     content: str
 
-class MomentCreate(ContentBase):
-    pass
+def process_categories(categories: Optional[List[str]]) -> List[str]:
+    if not categories:
+        return []
+    category_names = get_category_config()
+    reverse_map = {v: k for k, v in category_names.items()}
+    return [reverse_map.get(cat, cat) for cat in categories]
+
+class ContentBase(BaseModel):
+    content: str
+
+class EssayCreate(ContentBase):
+    categories: Optional[List[str]] = None
+
+class ArticleCreate(ContentBase):
+    title: str
+    summary: Optional[str] = None
+    referrer: Optional[str] = None
+    categories: Optional[List[str]] = None
 
 class ContentResponse(BaseModel):
     filename: str
@@ -114,15 +132,46 @@ def get_categories():
     category_names = get_category_config()
     # 返回配置中定义的所有显示名称，以及文章中出现的其他分类
     categories = set(category_names.values())
-    for f in POSTS_DIR.glob("*.md"):
-        post = frontmatter.load(f)
-        cat = post.get("category")
-        if cat:
-            categories.add(map_slug_to_category(cat))
+    for d in [POSTS_DIR, NOTES_DIR]:
+        for f in d.glob("*.md"):
+            post = frontmatter.load(f)
+            cats = post.get("categories") or ([post.get("category")] if post.get("category") else [])
+            for cat in cats:
+                if cat:
+                    categories.add(map_slug_to_category(cat))
     return sorted(list(categories))
 
-@app.post("/moments", response_model=ContentResponse)
-def create_moment(moment: MomentCreate):
+@app.post("/essays", response_model=ContentResponse)
+def create_essay(essay: EssayCreate):
+    date_str = get_current_jekyll_date()
+    file_date = date_str.split(' ')[0]
+    
+    # 使用时间戳确保文件名唯一
+    timestamp = datetime.datetime.now().strftime("%H%M%S")
+    filename = f"{file_date}-{timestamp}.md"
+    file_path = NOTES_DIR / filename
+    
+    sanitized_content = sanitize_math_delimiters(essay.content)
+    cat_slugs = process_categories(essay.categories) or ["essay"]
+    
+    post_data = frontmatter.Post(
+        sanitized_content,
+        date=date_str,
+        categories=cat_slugs
+    )
+    
+    with open(file_path, "wb") as f:
+        frontmatter.dump(post_data, f)
+        
+    return {
+        "filename": filename,
+        "type": "essay",
+        "metadata": post_data.metadata,
+        "content": sanitized_content
+    }
+
+@app.post("/articles", response_model=ContentResponse)
+def create_article(article: ArticleCreate):
     date_str = get_current_jekyll_date()
     file_date = date_str.split(' ')[0]
     
@@ -131,19 +180,27 @@ def create_moment(moment: MomentCreate):
     filename = f"{file_date}-{timestamp}.md"
     file_path = POSTS_DIR / filename
     
-    sanitized_content = sanitize_math_delimiters(moment.content)
-    moment_data = frontmatter.Post(
+    sanitized_content = sanitize_math_delimiters(article.content)
+    cat_slugs = process_categories(article.categories) or ["article"]
+    
+    post_data = frontmatter.Post(
         sanitized_content,
-        date=date_str
+        date=date_str,
+        title=article.title,
+        categories=cat_slugs
     )
+    if article.summary:
+        post_data["summary"] = article.summary
+    if article.referrer:
+        post_data["referrer"] = article.referrer
     
     with open(file_path, "wb") as f:
-        frontmatter.dump(moment_data, f)
+        frontmatter.dump(post_data, f)
         
     return {
         "filename": filename,
-        "type": "moment",
-        "metadata": moment_data.metadata,
+        "type": "article",
+        "metadata": post_data.metadata,
         "content": sanitized_content
     }
 
@@ -162,72 +219,119 @@ def search_content(q: str):
     results = []
     q = q.lower()
     
-    # 搜索动态 (现在都在 _posts 中)
-    for f in POSTS_DIR.glob("*.md"):
-        moment = frontmatter.load(f)
-        title = str(moment.get("title", "")).lower()
-        content = moment.content.lower()
-        if q in title or q in content:
-            results.append({
-                "filename": f.name,
-                "type": "moment",
-                "title": moment.get("title"),
-                "date": moment.get("date"),
-                "snippet": moment.content[:100] + "..."
-            })
+    for d in [POSTS_DIR, NOTES_DIR]:
+        for f in d.glob("*.md"):
+            post = frontmatter.load(f)
+            title = str(post.get("title", "")).lower()
+            content = post.content.lower()
+            if q in title or q in content:
+                file_type = "article" if d == POSTS_DIR else "essay"
+                cats = post.get("categories") or ([post.get("category")] if post.get("category") else [])
+                results.append({
+                    "filename": f.name,
+                    "type": file_type,
+                    "title": post.get("title"),
+                    "categories": cats,
+                    "date": post.get("date"),
+                    "snippet": post.content[:100] + "..."
+                })
             
     return sorted(results, key=lambda x: str(x.get("date")), reverse=True)
 
 def list_all_content():
     results = []
-    for f in POSTS_DIR.glob("*.md"):
-        moment = frontmatter.load(f)
-        results.append({
-            "filename": f.name,
-            "type": "moment",
-            "title": moment.get("title"),
-            "date": moment.get("date"),
-            "snippet": moment.content[:100] + "..." if moment.content else ""
-        })
+    for d in [POSTS_DIR, NOTES_DIR]:
+        for f in d.glob("*.md"):
+            post = frontmatter.load(f)
+            file_type = "article" if d == POSTS_DIR else "essay"
+            cats = post.get("categories") or ([post.get("category")] if post.get("category") else [])
+            results.append({
+                "filename": f.name,
+                "type": file_type,
+                "title": post.get("title"),
+                "categories": cats,
+                "date": post.get("date"),
+                "snippet": post.content[:100] + "..." if post.content else ""
+            })
     return sorted(results, key=lambda x: str(x.get("date")), reverse=True)
 
-class MomentUpdate(BaseModel):
+class PostUpdate(BaseModel):
     content: str
     title: Optional[str] = None
+    summary: Optional[str] = None
+    referrer: Optional[str] = None
+    categories: Optional[List[str]] = None
 
-@app.get("/moments/{filename}")
-def get_moment(filename: str):
-    file_path = POSTS_DIR / filename
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail="Moment not found")
-    moment = frontmatter.load(file_path)
-    return {"metadata": moment.metadata, "content": moment.content}
+def find_file(filename: str) -> Path:
+    for d in [POSTS_DIR, NOTES_DIR]:
+        path = d / filename
+        if path.exists():
+            return path
+    return None
 
-@app.put("/moments/{filename}")
-def update_moment(filename: str, data: MomentUpdate):
-    file_path = POSTS_DIR / filename
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail="Moment not found")
+@app.get("/posts/{filename}")
+def get_post(filename: str):
+    file_path = find_file(filename)
+    if not file_path:
+        raise HTTPException(status_code=404, detail="Post not found")
+    post = frontmatter.load(file_path)
+    return {"metadata": post.metadata, "content": post.content}
+
+@app.put("/posts/{filename}")
+def update_post(filename: str, data: PostUpdate):
+    file_path = find_file(filename)
+    if not file_path:
+        raise HTTPException(status_code=404, detail="Post not found")
     
-    moment = frontmatter.load(file_path)
-    moment.content = sanitize_math_delimiters(data.content)
-    if data.title:
-        moment["title"] = data.title
+    post = frontmatter.load(file_path)
+    post.content = sanitize_math_delimiters(data.content)
+    if data.title is not None:
+        post["title"] = data.title
+    if data.summary is not None:
+        post["summary"] = data.summary
+    if data.referrer is not None:
+        post["referrer"] = data.referrer
+    if data.categories is not None:
+        post["categories"] = process_categories(data.categories)
+        if "category" in post:
+            del post["category"]
         
     with open(file_path, "wb") as f:
-        frontmatter.dump(moment, f)
+        frontmatter.dump(post, f)
+    
+    return {"status": "success", "filename": filename}
+        
+    with open(file_path, "wb") as f:
+        frontmatter.dump(post, f)
     
     return {"status": "success", "filename": filename}
 
-@app.delete("/moments/{filename}")
-def delete_moment(filename: str):
-    file_path = POSTS_DIR / filename
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail="Moment not found")
+@app.delete("/posts/{filename}")
+def delete_post(filename: str):
+    file_path = find_file(filename)
+    if not file_path:
+        raise HTTPException(status_code=404, detail="Post not found")
     
     os.remove(file_path)
     
     return {"status": "success", "message": f"Deleted {filename}"}
+
+# 为了保持向后兼容，保留旧的路径（如果 GUI 还在用）
+@app.post("/moments", response_model=ContentResponse)
+def create_moment_legacy(moment: EssayCreate):
+    return create_essay(moment)
+
+@app.get("/moments/{filename}")
+def get_moment_legacy(filename: str):
+    return get_post(filename)
+
+@app.put("/moments/{filename}")
+def update_moment_legacy(filename: str, data: PostUpdate):
+    return update_post(filename, data)
+
+@app.delete("/moments/{filename}")
+def delete_moment_legacy(filename: str):
+    return delete_post(filename)
 
 if __name__ == "__main__":
     import uvicorn
